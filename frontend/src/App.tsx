@@ -1,9 +1,16 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Register from './pages/Register';
 
 
 const App = () => {
-  return (
-    <div>App</div>
-  )
-}
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/register" element={<Register />} />
 
-export default App
+            </Routes>
+        </BrowserRouter>
+    );
+};
+
+export default App;
