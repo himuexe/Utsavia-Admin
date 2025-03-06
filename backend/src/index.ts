@@ -8,7 +8,8 @@ import dotenv from "dotenv";
 import bookingRoutes from "./routes/bookingRoutes";
 import itemRoutes from "./routes/itemRoute";
 import categoryRoutes from "./routes/categoryRoute";
-import adminRoutes from "./routes/adminRoutes";
+import authRoutes from "./routes/authRoutes";
+import { protect } from "./middleware/auth";
 
 dotenv.config();
 
@@ -71,11 +72,13 @@ app.get("/api/health", async (req: Request, res: Response) => {
   }
 });
 
-// Routes
-app.use("/api/booking", bookingRoutes);
-app.use("/api/item", itemRoutes);
-app.use("/api/category", categoryRoutes);
-app.use("/api/admin", adminRoutes);
+// Auth Routes (public)
+app.use("/api/auth", authRoutes);
+
+// Protected Routes
+app.use("/api/booking", protect as any, bookingRoutes);
+app.use("/api/item", protect as any, itemRoutes);
+app.use("/api/category", protect as any, categoryRoutes);
 
 // Start server
 const server = app.listen(PORT, () => {

@@ -23,13 +23,14 @@ export const createItem = async (req: Request, res: Response): Promise<void> => 
 // Get all items
 export const getAllItems = async (req: Request, res: Response): Promise<void> => {
     try {
-        const items: IItem[] = await Item.find();
-        res.status(200).json(items);
+      const categoryId = req.query.category as string;
+      const filter = categoryId ? { category: categoryId } : {};
+      const items: IItem[] = await Item.find(filter).populate('category');
+      res.status(200).json(items);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching items', error });
+      res.status(500).json({ message: 'Error fetching items', error });
     }
-};
-
+  };
 // Get a single item by ID
 export const getItemById = async (req: Request, res: Response): Promise<void> => {
     try {
