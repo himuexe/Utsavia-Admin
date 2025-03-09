@@ -4,7 +4,7 @@ import {
   getCurrentAdmin,
   logout,
   createInitialAdmin,
-} from "../controllers/authController";
+} from "../controllers/AuthController";
 import { protect } from "../middleware/auth";
 
 const router = express.Router();

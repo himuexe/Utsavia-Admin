@@ -67,14 +67,53 @@ const authApi = {
   },
 };
 
-// Axios interceptor to handle 401 responses
+// Axios interceptor to handle 401 responses - don't automatically redirect
+// Let the auth context handle the redirection
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  
+  failedQueue = [];
+};
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (axios.isAxiosError(error) && error.response?.status === 401) {
-      // Handle token expiration by redirecting to login
-      window.location.href = '/login';
+    const originalRequest = error.config;
+    
+    if (axios.isAxiosError(error) && error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then(token => {
+            return api(originalRequest);
+          })
+          .catch(err => {
+            return Promise.reject(err);
+          });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      // Only redirect to login if we're not already on the login page
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
+      
+      processQueue(error);
+      return Promise.reject(error);
     }
+    
     return Promise.reject(error);
   }
 );

@@ -23,25 +23,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const loadUser = async () => {
       try {
-        // Skip if already loading or if auth check is in progress
-        if (loading || localStorage.getItem('authCheckInProgress') === 'true') {
-          return;
-        }
-  
-        localStorage.setItem('authCheckInProgress', 'true');
         setLoading(true);
-  
+        
         const response = await authApi.getCurrentUser();
         if (response.success && response.admin) {
           setUser(response.admin);
         } else {
-          setUser(null); // Clear user state if not authenticated
+          setUser(null);
         }
       } catch (error) {
-        setUser(null); // Clear user state on error
         console.error('Failed to load user:', error);
+        setUser(null);
       } finally {
-        localStorage.removeItem('authCheckInProgress');
         setLoading(false);
       }
     };

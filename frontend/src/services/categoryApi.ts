@@ -1,6 +1,18 @@
 // src/services/categoryApi.ts
-import api from './apiClient';
 import { ICategory } from '../types/category';
+import axios from 'axios';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:7000/api';
+
+// Configure axios instance
+const api = axios.create({
+  baseURL: API_URL,
+  withCredentials: true, // Important for cookies
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+
 
 export const categoriesApi = {
   // Get all categories

@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
+import { User } from './User'; // Import the User model
 
 // Booking Model
 interface IBookingItem {
@@ -32,7 +33,7 @@ const bookingSchema: Schema = new Schema(
   {
     userId: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'User', // Ensure this matches the name used in mongoose.model()
       required: true,
     },
     items: [
@@ -46,7 +47,7 @@ const bookingSchema: Schema = new Schema(
     totalAmount: { type: Number, required: true },
     status: {
       type: String,
-      enum: ['pending', 'paid', 'cancelled'],
+      enum: ['pending', 'confirmed', 'cancelled'],
       default: 'pending',
     },
     paymentIntentId: { type: String },

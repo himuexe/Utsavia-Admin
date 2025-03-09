@@ -1,12 +1,12 @@
 import { createBrowserRouter } from 'react-router-dom';
-import MainLayout from './components/layout/MainLayout';
-import Dashboard from './pages/dashboard';
-import Bookings from './pages/bookings';
-import Categories from './pages/categories';
-import Themes from './pages/themes';
-import LoginPage from './pages/login/index';
-import ProtectedRoute from './pages/login/ProtectedRoute';
-import { AuthProvider } from './context/authContext';
+import MainLayout from '../layout/MainLayout';
+import Dashboard from '../pages/Dashboard';
+import Bookings from '../pages/BookingList';
+import Categories from '../pages/Categories';
+import Themes from '../pages/Themes';
+import LoginPage from '../pages/Login';
+import ProtectedRoute from './ProtectedRoute';
+import { AuthProvider } from '../context/authContext';
 
 const router = createBrowserRouter([
   {

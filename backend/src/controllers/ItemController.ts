@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Item, IItem } from '../models/item';
+import { Item, IItem } from '../models/Item';
 
 // Create a new item
 export const createItem = async (req: Request, res: Response): Promise<void> => {
