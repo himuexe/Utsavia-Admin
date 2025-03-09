@@ -148,20 +148,6 @@ const CategoryView: React.FC = () => {
           <div>
             <h3 className="text-lg font-medium mb-2">Additional Information</h3>
             
-            {category.parentId && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-500 mb-1">Parent Category</label>
-                <div className="p-2 border rounded bg-gray-50">
-                  <Link 
-                    to={`/management/categories/${category.parentId}`}
-                    className="text-blue-500 hover:underline"
-                  >
-                    View Parent
-                  </Link>
-                </div>
-              </div>
-            )}
-            
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-500 mb-1">Created At</label>
               <div className="p-2 border rounded bg-gray-50">

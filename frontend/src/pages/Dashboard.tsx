@@ -201,35 +201,32 @@ const BookingDashboard: React.FC = () => {
             
             {/* Daily bookings line chart */}
             <div className="bg-white p-6 rounded shadow">
-              <h3 className="text-lg font-medium text-gray-700 mb-4">Daily Bookings</h3>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={prepareTimeSeriesData()}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="_id" 
-                      tickFormatter={(value) => {
-                        const date = new Date(value);
-                        return format(date, 'MMM dd');
-                      }}
-                    />
-                    <YAxis allowDecimals={false} />
-                    <Tooltip 
-                      labelFormatter={(value) => `Date: ${format(new Date(value), 'MMM dd, yyyy')}`}
-                      formatter={(value: any, name: any) => {
-                        if (name === 'count') return [`${value} bookings`, 'Bookings'];
-                        return [formatCurrency(value), 'Revenue'];
-                      }}
-                    />
-                    <Legend />
-                    <Line type="monotone" dataKey="count" stroke="#8884d8" name="Bookings" activeDot={{ r: 8 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+  <h3 className="text-lg font-medium text-gray-700 mb-4">Daily Bookings</h3>
+  <div className="h-64">
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart
+        data={prepareTimeSeriesData()}
+        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis 
+          dataKey="_id" 
+          tickFormatter={(value) => {
+            const date = new Date(value);
+            return format(date, 'MMM dd');
+          }}
+        />
+        <YAxis allowDecimals={false} />
+        <Tooltip 
+          labelFormatter={(value) => `Date: ${format(new Date(value), 'MMM dd, yyyy')}`}
+          formatter={(value: any) => [`${value} bookings`, 'Bookings']} // Corrected formatter
+        />
+        <Legend />
+        <Line type="monotone" dataKey="count" stroke="#8884d8" name="Bookings" activeDot={{ r: 8 }} />
+      </LineChart>
+    </ResponsiveContainer>
+  </div>
+</div>
           </div>
           
           {/* Revenue chart */}

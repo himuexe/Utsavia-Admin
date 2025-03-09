@@ -117,12 +117,6 @@ const BookingListPage: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Bookings Management</h1>
-        <button 
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          onClick={() => navigate('/bookings/new')}
-        >
-          Add New Booking
-        </button>
       </div>
       
       {/* Filters */}

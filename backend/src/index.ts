@@ -77,7 +77,7 @@ app.use("/api/auth", authRoutes);
 
 // Protected Routes
 app.use("/api/booking", protect as any, bookingRoutes);
-app.use("/api/item", protect as any, itemRoutes);
+app.use("/api/items", protect as any, itemRoutes);
 app.use("/api/category", protect as any, categoryRoutes);
 
 // Start server

@@ -1,19 +1,30 @@
 import express from 'express';
-import {
-    createItem,
-    getAllItems,
-    getItemById,
-    updateItem,
-    deleteItem,
-} from '../controllers/ItemController';
+import { 
+    getAllItems, 
+    getItemById, 
+    createItem, 
+    updateItem, 
+    softDeleteItem, 
+    hardDeleteItem 
+  } from  '../controllers/ItemController';
 
 const router = express.Router();
 
-// Item routes
-router.post('/items', createItem);
-router.get('/items', getAllItems);
-router.get('/items/:id', getItemById);
-router.put('/items/:id', updateItem);
-router.delete('/items/:id', deleteItem);
+router.get('/', getAllItems);
+
+// Get a single item
+router.get('/:id', getItemById as express.RequestHandler);
+
+// Create a new item
+router.post('/', createItem as express.RequestHandler);
+
+// Update an item
+router.put('/:id', updateItem as express.RequestHandler);
+
+// Soft delete an item (set isActive to false)
+router.patch('/:id/deactivate', softDeleteItem as express.RequestHandler);
+
+// Hard delete an item (remove from database)
+router.delete('/:id', hardDeleteItem as express.RequestHandler);
 
 export default router;
