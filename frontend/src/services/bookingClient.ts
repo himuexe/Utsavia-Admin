@@ -23,12 +23,13 @@ export interface Booking {
   _id: string;
   userId: {
     _id: string;
-    name: string;
-    email: string;
+    firstName: string;
+    lastName: string;
+    primaryEmail: string;
   };
   items: BookingItem[];
   totalAmount: number;
-  status: 'pending' | 'paid' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'cancelled';
   paymentIntentId?: string;
   address: Address;
   createdAt: Date;

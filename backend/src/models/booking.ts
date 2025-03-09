@@ -22,7 +22,7 @@ export interface IBooking extends Document {
   userId: Types.ObjectId;
   items: IBookingItem[];
   totalAmount: number;
-  status: 'pending' | 'paid' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'cancelled';
   paymentIntentId?: string;
   address: IAddress;
   createdAt: Date;

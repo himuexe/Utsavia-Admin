@@ -58,7 +58,7 @@ const BookingDashboard: React.FC = () => {
   
   // Format currency
   const formatCurrency = (value: number) => {
-    return `$${value.toFixed(2)}`;
+    return `₹${value.toFixed(2)}`; // Changed from `$` to `₹`
   };
   
   // Prepare data for pie chart - handle status mapping

@@ -1,45 +1,32 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { bookingApi, Booking, BookingFilters } from '../services/bookingClient';
 import { format } from 'date-fns';
 
-// Components
-
 const BookingListPage: React.FC = () => {
-  // State
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [totalBookings, setTotalBookings] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  
-  // Filters state
+  const statusOptions = ['all', 'pending', 'confirmed', 'cancelled'];
   const [filters, setFilters] = useState<BookingFilters>({
     page: 1,
     limit: 10,
     sortField: 'createdAt',
     sortOrder: 'desc'
   });
-  
-  // Status options for filter
-  const statusOptions = ['all', 'pending', 'paid', 'cancelled'];
-  
-  // Sort options
-  const sortOptions = [
-    { field: 'createdAt', label: 'Date Created' },
-    { field: 'totalAmount', label: 'Total Amount' },
-    { field: 'status', label: 'Status' }
-  ];
-  
+
   // Fetch bookings
   const fetchBookings = async () => {
     try {
       setLoading(true);
       const response = await bookingApi.getBookings(filters);
-  
-      // Check if response exists and has the expected structure
+
       if (response && response.bookings && response.pagination) {
-        setBookings(response.bookings); // Use response.bookings instead of response.data
+        setBookings(response.bookings);
         setTotalBookings(response.pagination.total);
         setCurrentPage(response.pagination.page);
         setTotalPages(response.pagination.pages);
@@ -56,16 +43,16 @@ const BookingListPage: React.FC = () => {
       setLoading(false);
     }
   };
+
   // Handle filter changes
   const handleFilterChange = (name: string, value: any) => {
     setFilters(prev => ({
       ...prev,
       [name]: value,
-      // Reset page to 1 when filters change
       page: name === 'page' ? value : 1
     }));
   };
-  
+
   // Handle sort change
   const handleSortChange = (field: string) => {
     setFilters(prev => ({
@@ -75,7 +62,7 @@ const BookingListPage: React.FC = () => {
       page: 1
     }));
   };
-  
+
   // Reset filters
   const resetFilters = () => {
     setFilters({
@@ -85,7 +72,7 @@ const BookingListPage: React.FC = () => {
       sortOrder: 'desc'
     });
   };
-  
+
   // Delete booking handler
   const handleDeleteBooking = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this booking?')) {
@@ -98,22 +85,22 @@ const BookingListPage: React.FC = () => {
       }
     }
   };
-  
+
   // Effect to fetch bookings when filters change
   useEffect(() => {
     fetchBookings();
   }, [filters]);
-  
+
   // Format date for display
   const formatDate = (date: Date) => {
     return format(new Date(date), 'MMM dd, yyyy HH:mm');
   };
-  
+
   // Render status badge
   const renderStatusBadge = (status: string) => {
     const statusClasses: Record<string, string> = {
       pending: 'bg-yellow-100 text-yellow-800',
-      paid: 'bg-green-100 text-green-800',
+      confirmed: 'bg-green-100 text-green-800',
       cancelled: 'bg-red-100 text-red-800'
     };
     
@@ -125,14 +112,14 @@ const BookingListPage: React.FC = () => {
       </span>
     );
   };
-  
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Bookings Management</h1>
         <button 
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          onClick={() => console.log('Add new booking')}
+          onClick={() => navigate('/bookings/new')}
         >
           Add New Booking
         </button>
@@ -238,7 +225,7 @@ const BookingListPage: React.FC = () => {
       <div className="bg-white rounded shadow overflow-x-auto">
         {loading ? (
           <div className="p-8 text-center">Loading bookings...</div>
-        ) : !bookings || bookings.length === 0 ? ( // Added check for undefined bookings
+        ) : !bookings || bookings.length === 0 ? (
           <div className="p-8 text-center">No bookings found. Try adjusting your filters.</div>
         ) : (
           <table className="min-w-full divide-y divide-gray-200">
@@ -298,11 +285,11 @@ const BookingListPage: React.FC = () => {
                     {formatDate(booking.createdAt)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{booking.userId?.name || 'Unknown'}</div>
-                    <div className="text-sm text-gray-500">{booking.userId?.email || 'No email'}</div>
+                    <div className="text-sm font-medium text-gray-900">{booking.userId?.firstName || 'Unknown'}</div>
+                    <div className="text-sm text-gray-500">{booking.userId?.primaryEmail || 'No email'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${booking.totalAmount.toFixed(2)}
+                    ₹{booking.totalAmount.toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {renderStatusBadge(booking.status)}
@@ -311,7 +298,7 @@ const BookingListPage: React.FC = () => {
                     <div className="text-sm text-gray-900">
                       {booking.items && booking.items.map((item, index) => (
                         <div key={index} className="mb-1">
-                          {item.itemName} - ${item.price.toFixed(2)}
+                          {item.itemName} - ₹{item.price.toFixed(2)}
                           <div className="text-xs text-gray-500">
                             {format(new Date(item.date), 'MMM dd, yyyy')} | {item.timeSlot}
                           </div>
@@ -336,13 +323,13 @@ const BookingListPage: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button 
                       className="text-blue-600 hover:text-blue-900 mr-3"
-                      onClick={() => console.log(`View details for ${booking._id}`)}
+                      onClick={() => navigate(`/bookings/${booking._id}`)}
                     >
                       View
                     </button>
                     <button 
                       className="text-indigo-600 hover:text-indigo-900 mr-3"
-                      onClick={() => console.log(`Edit booking ${booking._id}`)}
+                      onClick={() => navigate(`/bookings/edit/${booking._id}`)}
                     >
                       Edit
                     </button>

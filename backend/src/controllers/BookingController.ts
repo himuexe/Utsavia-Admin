@@ -11,31 +11,31 @@ export const getAllBookings = async (req: Request, res: Response) => {
     if (!mongoose.models.User) {
       return res.status(500).json({
         message: 'Database models not properly initialized',
-        error: 'User model not registered'
+        error: 'User model not registered',
       });
     }
-    
+
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
-    
+
     // Handle sorting
-    const sortField = req.query.sortField as string || 'createdAt';
-    const sortOrder = req.query.sortOrder as string === 'asc' ? 1 : -1;
+    const sortField = (req.query.sortField as string) || 'createdAt';
+    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
     const sort: { [key: string]: 'asc' | 'desc' | 1 | -1 } = {};
     sort[sortField] = sortOrder === 1 ? 'asc' : 'desc';
-    
+
     // Handle filtering
     const filter: Record<string, any> = {};
-    
+
     if (req.query.status) {
       filter.status = req.query.status;
     }
-    
+
     if (req.query.dateFrom && req.query.dateTo) {
       filter.createdAt = {
         $gte: new Date(req.query.dateFrom as string),
-        $lte: new Date(req.query.dateTo as string)
+        $lte: new Date(req.query.dateTo as string),
       };
     }
 
@@ -53,33 +53,33 @@ export const getAllBookings = async (req: Request, res: Response) => {
       filter.$or = [
         { 'address.city': searchRegex },
         { 'address.street': searchRegex },
-        { 'items.itemName': searchRegex }
+        { 'items.itemName': searchRegex },
       ];
     }
 
-    // Execute query with filtering, sorting and pagination
+    // Execute query with filtering, sorting, and pagination
     const bookings = await Booking.find(filter)
       .sort(sort)
       .skip(skip)
       .limit(limit)
-      .populate('userId', 'name email');
-    
+      .populate('userId', 'firstName lastName primaryEmail'); // Correct field names
+
     // Get total count for pagination
     const total = await Booking.countDocuments(filter);
-    
+
     res.status(200).json({
       bookings,
       pagination: {
         total,
         page,
         limit,
-        pages: Math.ceil(total / limit)
-      }
+        pages: Math.ceil(total / limit),
+      },
     });
   } catch (error) {
     res.status(500).json({
       message: 'Error fetching bookings',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 };
@@ -87,18 +87,20 @@ export const getAllBookings = async (req: Request, res: Response) => {
 // Get booking by ID
 export const getBookingById = async (req: Request, res: Response) => {
   try {
-    const booking = await Booking.findById(req.params.id)
-      .populate('userId', 'name email');
-    
+    const booking = await Booking.findById(req.params.id).populate(
+      'userId',
+      'firstName lastName primaryEmail' // Correct field names
+    );
+
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
     }
-    
+
     res.status(200).json(booking);
   } catch (error) {
     res.status(500).json({
       message: 'Error fetching booking',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 };
@@ -219,7 +221,6 @@ export const getBookingStats = async (req: Request, res: Response) => {
       { $group: { _id: "$status", count: { $sum: 1 } } }
     ]);
     
-    // Get revenue stats - updated to consider all statuses, but can filter by confirmed/paid if needed
     const revenueStats = await Booking.aggregate([
       { 
         $match: { 
