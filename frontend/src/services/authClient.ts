@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:7000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://utsavia-admin-server.onrender.com/api';
 
 export interface LoginCredentials {
   email: string;

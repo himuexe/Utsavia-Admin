@@ -1,5 +1,5 @@
 // src/services/categoryClient.ts
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:7000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://utsavia-admin-server.onrender.com/api';
 const API_ENDPOINT = `${API_URL}/api/category`;
 
 export interface Category {
