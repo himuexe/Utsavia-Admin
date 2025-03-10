@@ -3,7 +3,7 @@ import {
   login,
   getCurrentAdmin,
   logout,
-} from "../controllers/AuthController";
+} from "../controllers/authController";
 import { protect } from "../middleware/auth";
 
 const router = express.Router();
