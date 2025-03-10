@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Item, IItem } from '../models/Item';
+import { Item, IItem } from '../models/item';
 import mongoose from 'mongoose';
 import { cloudinary, uploadItemImage } from '../config/cloudinary'; // Import Cloudinary and upload middleware
 import { handleUploadErrors } from '../middleware/uploadMiddleware'; // Import error handling middleware

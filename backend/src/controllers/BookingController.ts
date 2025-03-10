@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import '../models/User'; 
-import { Booking } from '../models/Booking';
+import '../models/user'; 
+import { Booking } from '../models/booking';
 
 // Get all bookings with pagination, filtering and sorting
 export const getAllBookings = async (req: Request, res: Response) => {

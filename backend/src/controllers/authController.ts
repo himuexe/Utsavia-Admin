@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import Admin from "../models/Admin";
+import Admin from "../models/admin";
 
 // Type for login request body
 interface LoginRequestBody {

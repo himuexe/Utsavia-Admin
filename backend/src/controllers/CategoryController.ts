@@ -1,6 +1,6 @@
 // src/controllers/categoryController.ts
 import { Request, Response } from 'express';
-import { Category, ICategory } from '../models/Category';
+import { Category, ICategory } from '../models/category';
 import slugify from 'slugify';
 import mongoose, { Types } from 'mongoose';
 import { cloudinary } from '../config/cloudinary';
