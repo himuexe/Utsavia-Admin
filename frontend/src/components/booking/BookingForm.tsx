@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { bookingApi, Booking, BookingItem, Address } from '../../services/bookingClient';
+import { bookingApi, BookingItem, Address , Booking } from '../../services/bookingClient';
 
 interface BookingFormData {
   userId: string;
@@ -38,7 +38,6 @@ const initialFormState: BookingFormData = {
 const BookingFormPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const isEditMode = Boolean(id);
   
   const [formData, setFormData] = useState<BookingFormData>(initialFormState);
   const [loading, setLoading] = useState<boolean>(false);
@@ -47,7 +46,7 @@ const BookingFormPage: React.FC = () => {
   // Fetch booking data for edit mode
   useEffect(() => {
     const fetchBookingData = async () => {
-      if (!isEditMode || !id) return;
+      if (!id) return;
       
       try {
         setLoading(true);
@@ -78,8 +77,14 @@ const BookingFormPage: React.FC = () => {
     };
 
     fetchBookingData();
-  }, [id, isEditMode]);
-
+  }, [id]);
+  const updatedBookingData: Partial<Booking> = {
+    items: formData.items,
+    totalAmount: formData.totalAmount,
+    status: formData.status,
+    paymentIntentId: formData.paymentIntentId,
+    address: formData.address,
+  };
   // Handle form submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,15 +92,13 @@ const BookingFormPage: React.FC = () => {
     try {
       setLoading(true);
       
-      if (isEditMode && id) {
-        await bookingApi.updateBooking(id, formData);
-      } else {
-        await bookingApi.createBooking(formData);
+      if (id) {
+        await bookingApi.updateBooking(id, updatedBookingData);
       }
       
       navigate('/bookings');
     } catch (err) {
-      setError(`Failed to ${isEditMode ? 'update' : 'create'} booking. Please try again.`);
+      setError('Failed to update booking. Please try again.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -178,7 +181,7 @@ const BookingFormPage: React.FC = () => {
     });
   };
 
-  if (loading && isEditMode) {
+  if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white p-8 rounded shadow text-center">
@@ -191,7 +194,7 @@ const BookingFormPage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">{isEditMode ? 'Edit Booking' : 'Create New Booking'}</h1>
+        <h1 className="text-2xl font-bold">Edit Booking</h1>
         <button
           className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
           onClick={() => navigate('/bookings')}
@@ -415,7 +418,7 @@ const BookingFormPage: React.FC = () => {
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             disabled={loading}
           >
-            {loading ? 'Saving...' : isEditMode ? 'Update Booking' : 'Create Booking'}
+            {loading ? 'Saving...' : 'Update Booking'}
           </button>
         </div>
       </form>

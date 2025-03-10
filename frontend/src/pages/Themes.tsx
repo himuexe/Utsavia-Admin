@@ -1,6 +1,6 @@
 // src/pages/Items.tsx
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, } from 'react-router-dom';
 import { fetchItems, deactivateItem, deleteItem, Item } from '../services/itemClient';
 import { categoryService, Category } from '../services/categoryClient';
 import Spinner from '../components/common/Spinner';
@@ -20,7 +20,6 @@ const Items: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
   
-  const navigate = useNavigate();
 
   // Load items and categories
   useEffect(() => {

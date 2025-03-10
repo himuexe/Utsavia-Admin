@@ -44,7 +44,7 @@ const ItemForm: React.FC = () => {
         const categoriesResponse = await categoryService.getAll();
         
         // Filter categories to include only level 1 categories
-        const level1Categories = categoriesResponse.data.filter((category: Category) => category.level === 1);
+        const level1Categories = (categoriesResponse.data as Category[]).filter((category: Category) => category.level === 1);
         
         setCategories(level1Categories);
         
@@ -248,7 +248,7 @@ const ItemForm: React.FC = () => {
             </label>
             <select
               name="category"
-              value={formData.category}
+              value={String(formData.category)}
               onChange={handleInputChange}
               required
               className="w-full p-2 border rounded"
