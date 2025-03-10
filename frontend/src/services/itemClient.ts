@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://utsavia-admin-server.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://utsavia-admin-server.onrender.com';
 const API_URL = `${API_BASE_URL}/items`;
 
 export interface ItemPrice {
