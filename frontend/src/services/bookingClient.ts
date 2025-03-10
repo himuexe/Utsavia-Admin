@@ -1,4 +1,4 @@
-export const API_URL = import.meta.env.REACT_APP_API_URL || 'http://localhost:7000/api';
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:7000/api';
 
 export interface BookingItem {
   itemName: string;
