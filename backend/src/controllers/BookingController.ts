@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
-// First, make sure User is imported and registered before Booking
-import '../models/User'; // This ensures User schema is registered first
+import '../models/User'; 
 import { Booking } from '../models/Booking';
 
 // Get all bookings with pagination, filtering and sorting
@@ -101,44 +100,6 @@ export const getBookingById = async (req: Request, res: Response) => {
     res.status(500).json({
       message: 'Error fetching booking',
       error: error instanceof Error ? error.message : 'Unknown error',
-    });
-  }
-};
-
-// Create new booking
-export const createBooking = async (req: Request, res: Response) => {
-  try {
-    const {
-      userId,
-      items,
-      totalAmount,
-      status,
-      paymentIntentId,
-      address
-    } = req.body;
-    
-    // Validate required fields
-    if (!userId || !items || !totalAmount || !address) {
-      return res.status(400).json({ message: 'Missing required fields' });
-    }
-    
-    // Create booking
-    const booking = new Booking({
-      userId,
-      items,
-      totalAmount,
-      status: status || 'pending',
-      paymentIntentId,
-      address
-    });
-    
-    await booking.save();
-    
-    res.status(201).json(booking);
-  } catch (error) {
-    res.status(500).json({
-      message: 'Error creating booking',
-      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 };

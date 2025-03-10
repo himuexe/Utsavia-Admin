@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { categoryService, Category } from '../../services/categoryClient';
 
@@ -8,6 +8,7 @@ const CategoryForm: React.FC = () => {
   const location = useLocation();
   const isViewMode = location.pathname.includes('/view');
   const isEditMode = id && !isViewMode;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [category, setCategory] = useState<Partial<Category>>({
     name: '',
@@ -17,6 +18,8 @@ const CategoryForm: React.FC = () => {
     image: '',
   });
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [parentCategories, setParentCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +51,12 @@ const CategoryForm: React.FC = () => {
       setLoading(true);
       try {
         const response = await categoryService.getById(id);
-        setCategory(response.data as Category);
+        const categoryData = response.data as Category;
+        setCategory(categoryData);
+        
+        if (categoryData.image) {
+          setImagePreview(categoryData.image);
+        }
       } catch (err: any) {
         setError(err.response?.data?.message || 'Failed to fetch category');
       } finally {
@@ -64,6 +72,20 @@ const CategoryForm: React.FC = () => {
   ) => {
     const { name, value } = e.target;
     setCategory((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      
+      // Create a preview URL for the selected image
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,7 +111,6 @@ const CategoryForm: React.FC = () => {
         name: category.name,
         description: category.description,
         isActive: category.isActive,
-        image: category.image,
       };
 
       // Only include parentId when adding a new category
@@ -99,11 +120,11 @@ const CategoryForm: React.FC = () => {
 
       if (isEditMode) {
         // Update existing category
-        await categoryService.update(id!, categoryData);
+        await categoryService.update(id!, categoryData, selectedFile || undefined);
         setSuccess('Category updated successfully');
       } else {
         // Create new category
-        await categoryService.create(categoryData);
+        await categoryService.create(categoryData, selectedFile || undefined);
         setSuccess('Category created successfully');
 
         // Reset the form after successful creation
@@ -114,6 +135,13 @@ const CategoryForm: React.FC = () => {
           isActive: true,
           image: '',
         });
+        setSelectedFile(null);
+        setImagePreview(null);
+        
+        // Clear the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       }
 
       // Navigate back to categories list after a short delay
@@ -195,21 +223,25 @@ const CategoryForm: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Image URL</label>
+              <label className="block text-sm font-medium mb-1">Category Image</label>
               <input
-                type="text"
-                name="image"
-                value={category.image || ''}
-                onChange={handleChange}
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
                 disabled={isViewMode}
-                placeholder="Image URL"
+                accept="image/*"
                 className="w-full p-2 border rounded"
               />
-              {category.image && (
+              <p className="text-xs text-gray-500 mt-1">
+                Supported formats: JPG, JPEG, PNG, GIF. Max size: 5MB
+              </p>
+              
+              {/* Image preview */}
+              {imagePreview && (
                 <div className="mt-2">
                   <img
-                    src={category.image}
-                    alt={category.name}
+                    src={imagePreview}
+                    alt={category.name || 'Category preview'}
                     className="h-24 w-24 object-cover rounded"
                   />
                 </div>

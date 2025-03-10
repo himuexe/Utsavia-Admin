@@ -26,7 +26,7 @@ const AdminSchema = new Schema<IAdmin>(
       type: String,
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
-      select: false, // Don't return password in queries by default
+      select: false, 
     },
     name: {
       type: String,
@@ -42,7 +42,7 @@ const AdminSchema = new Schema<IAdmin>(
   { timestamps: true }
 );
 
-// Hash password before saving
+
 AdminSchema.pre<IAdmin>("save", async function (next) {
   if (!this.isModified("password")) return next();
   try {
@@ -54,21 +54,21 @@ AdminSchema.pre<IAdmin>("save", async function (next) {
   }
 });
 
-// Method to compare password
+
 AdminSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Method to generate JWT token with explicit type assertions
+
 AdminSchema.methods.generateAuthToken = function (): string {
   const payload = {
     id: this._id.toString(),
     role: this.role
   };
   
-  // Force TypeScript to accept the secret key type
+
   const secret = process.env.JWT_SECRET as jwt.Secret;
   
   if (!secret) {

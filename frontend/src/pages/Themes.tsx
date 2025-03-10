@@ -142,7 +142,7 @@ const Items: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Items Management</h1>
         <Link 
-          to="/management/items/new" 
+          to="/themes/items/new" 
           className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded flex items-center"
         >
           <FaPlus className="mr-2" /> Add New Item
@@ -296,14 +296,14 @@ const Items: React.FC = () => {
                   <td className="py-3 px-4 border-b text-center">
                     <div className="flex justify-center space-x-2">
                       <Link
-                        to={`/management/items/${item._id}`}
+                        to={`/themes/items/${item._id}`}
                         className="text-blue-500 hover:text-blue-700"
                         title="View"
                       >
                         <FaEye />
                       </Link>
                       <Link
-                        to={`/management/items/${item._id}/edit`}
+                        to={`/themes/items/${item._id}/edit`}
                         className="text-yellow-500 hover:text-yellow-700"
                         title="Edit"
                       >

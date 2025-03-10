@@ -2,11 +2,25 @@
 import { Request, Response } from 'express';
 import { Category, ICategory } from '../models/Category';
 import slugify from 'slugify';
-import mongoose, {  Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
+import { cloudinary } from '../config/cloudinary';
+
+async function updateDescendants(category: ICategory): Promise<void> {
+  const childCategories = await Category.find({ parentId: category._id });
+  
+  for (const child of childCategories) {
+    child.level = category.level + 1;
+    child.path = [...category.path, category._id as Types.ObjectId];
+    await child.save();
+    
+    // Recursively update grandchildren
+    await updateDescendants(child);
+  }
+}
 
 export const createCategory = async (req: Request, res: Response) => {
   try {
-    const { name, description, parentId, isActive, image } = req.body;
+    const { name, description, parentId, isActive } = req.body;
     
     // Create slug from name
     const slug = slugify(name, { lower: true });
@@ -37,17 +51,20 @@ export const createCategory = async (req: Request, res: Response) => {
       path = [...parentCategory.path, parentCategory._id as Types.ObjectId];
     }
     
+    // Get image URL from uploaded file, if any
+    const image = req.file ? req.file.path : undefined;
+    
     // Create new category
     const category = new Category({
-        name,
-        slug,
-        description,
-        parentId: parentId ? new Types.ObjectId(parentId) : null,
-        level,
-        path,
-        isActive: isActive !== undefined ? isActive : true,
-        image
-      });
+      name,
+      slug,
+      description,
+      parentId: parentId ? new Types.ObjectId(parentId) : null,
+      level,
+      path,
+      isActive: isActive !== undefined ? isActive : true,
+      image
+    });
     
     const savedCategory = await category.save();
     
@@ -63,6 +80,7 @@ export const createCategory = async (req: Request, res: Response) => {
     });
   }
 };
+
 
 export const getAllCategories = async (req: Request, res: Response) => {
   try {
@@ -141,7 +159,7 @@ export const getCategoryById = async (req: Request, res: Response) => {
 export const updateCategory = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, description, parentId, isActive, image } = req.body;
+    const { name, description, parentId, isActive } = req.body;
     
     const category = await Category.findById(id);
     if (!category) {
@@ -159,7 +177,20 @@ export const updateCategory = async (req: Request, res: Response) => {
     
     if (description !== undefined) category.description = description;
     if (isActive !== undefined) category.isActive = isActive;
-    if (image !== undefined) category.image = image;
+    
+    // Handle image update
+    if (req.file) {
+      // If there's an existing image, delete it from Cloudinary
+      if (category.image) {
+        const publicId = category.image.split('/').pop()?.split('.')[0];
+        if (publicId) {
+          await cloudinary.uploader.destroy(`categories/${publicId}`);
+        }
+      }
+      
+      // Set the new image path
+      category.image = req.file.path;
+    }
     
     // Handle parent category change
     if (parentId !== undefined && parentId !== category.parentId?.toString()) {
@@ -240,6 +271,14 @@ export const deleteCategory = async (req: Request, res: Response) => {
       });
     }
     
+    // Delete image from Cloudinary if exists
+    if (category.image) {
+      const publicId = category.image.split('/').pop()?.split('.')[0];
+      if (publicId) {
+        await cloudinary.uploader.destroy(`categories/${publicId}`);
+      }
+    }
+    
     // Delete category
     await Category.findByIdAndDelete(id);
     
@@ -255,17 +294,3 @@ export const deleteCategory = async (req: Request, res: Response) => {
     });
   }
 };
-
-// Helper function to update descendants when a category's parent changes
-async function updateDescendants(category: ICategory): Promise<void> {
-  const childCategories = await Category.find({ parentId: category._id });
-  
-  for (const child of childCategories) {
-    child.level = category.level + 1;
-    child.path = [...category.path, category._id as Types.ObjectId];
-    await child.save();
-    
-    // Recursively update grandchildren
-    await updateDescendants(child);
-  }
-}

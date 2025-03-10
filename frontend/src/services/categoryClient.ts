@@ -1,8 +1,5 @@
-// src/services/categoryService.ts
-import { api } from './authClient'
-
+// src/services/categoryClient.ts
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:7000';
-
 const API_ENDPOINT = `${API_URL}/api/category`;
 
 export interface Category {
@@ -27,7 +24,6 @@ export interface CategoryResponse {
 }
 
 export const categoryService = {
-  // Get all categories with optional filters
   getAll: async (params?: {
     sort?: string;
     order?: 'asc' | 'desc';
@@ -36,91 +32,138 @@ export const categoryService = {
     isActive?: boolean;
   }): Promise<CategoryResponse> => {
     try {
-      const response = await api.get(API_ENDPOINT, { params });
-      return response.data;
+      const queryParams = new URLSearchParams(params as Record<string, string>);
+      const response = await fetch(`${API_ENDPOINT}?${queryParams.toString()}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return await response.json();
     } catch (error) {
       throw error;
     }
   },
-  
-  // Get category by ID
+
   getById: async (id: string): Promise<CategoryResponse> => {
     try {
-      const response = await api.get(`${API_ENDPOINT}/${id}`);
-      return response.data;
+      const response = await fetch(`${API_ENDPOINT}/${id}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return await response.json();
     } catch (error) {
       throw error;
     }
   },
-  
-  // Create new category
-  create: async (categoryData: Partial<Category>): Promise<CategoryResponse> => {
+
+  create: async (categoryData: Partial<Category>, imageFile?: File): Promise<CategoryResponse> => {
     try {
-      const response = await api.post(API_ENDPOINT, categoryData);
-      return response.data;
+      const formData = new FormData();
+      
+      // Add category data to form
+      Object.entries(categoryData).forEach(([key, value]) => {
+        if (value !== undefined) {
+          formData.append(key, value.toString());
+        }
+      });
+      
+      // Add image file if provided
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+      
+      const response = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      
+      return await response.json();
     } catch (error) {
       throw error;
     }
   },
-  
-  // Update existing category
-  update: async (
-    id: string, 
-    categoryData: Partial<Category>
-  ): Promise<CategoryResponse> => {
+
+  update: async (id: string, categoryData: Partial<Category>, imageFile?: File): Promise<CategoryResponse> => {
     try {
-      const response = await api.put(`${API_ENDPOINT}/${id}`, categoryData);
-      return response.data;
+      const formData = new FormData();
+      
+      // Add category data to form
+      Object.entries(categoryData).forEach(([key, value]) => {
+        if (value !== undefined) {
+          formData.append(key, value.toString());
+        }
+      });
+      
+      // Add image file if provided
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+      
+      const response = await fetch(`${API_ENDPOINT}/${id}`, {
+        method: 'PUT',
+        credentials: 'include',
+        body: formData,
+      });
+      
+      return await response.json();
     } catch (error) {
       throw error;
     }
   },
-  
-  // Delete category
+
   delete: async (id: string): Promise<CategoryResponse> => {
     try {
-      const response = await api.delete(`${API_ENDPOINT}/${id}`);
-      return response.data;
+      const response = await fetch(`${API_ENDPOINT}/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return await response.json();
     } catch (error) {
       throw error;
     }
   },
-  
-  // Get category tree (helper function to organize categories in hierarchy)
+
   getCategoryTree: async (): Promise<Category[]> => {
     try {
-      const response = await api.get(API_ENDPOINT);
-      const categories = response.data.data as Category[];
-      
-      // Map to keep track of categories by ID
+      const response = await fetch(API_ENDPOINT, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const categories = (await response.json()).data as Category[];
+
       const categoryMap = new Map<string, Category & { children: Category[] }>();
-      
-      // Initialize with empty children arrays
       categories.forEach(category => {
         categoryMap.set(category._id, { ...category, children: [] });
       });
-      
-      // Build the tree
+
       const rootCategories: Category[] = [];
-      
       categories.forEach(category => {
         const categoryWithChildren = categoryMap.get(category._id);
-        
         if (category.parentId && categoryMap.has(category.parentId)) {
-          // Add to parent's children
           const parent = categoryMap.get(category.parentId);
           if (parent) {
             parent.children.push(categoryWithChildren!);
           }
         } else {
-          // Root level category
           rootCategories.push(categoryWithChildren!);
         }
       });
-      
+
       return rootCategories;
     } catch (error) {
       throw error;
     }
-  }
+  },
 };

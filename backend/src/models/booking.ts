@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
-import { User } from './User'; // Import the User model
 
 // Booking Model
 interface IBookingItem {
@@ -33,7 +32,7 @@ const bookingSchema: Schema = new Schema(
   {
     userId: {
       type: Schema.Types.ObjectId,
-      ref: 'User', // Ensure this matches the name used in mongoose.model()
+      ref: 'User', 
       required: true,
     },
     items: [

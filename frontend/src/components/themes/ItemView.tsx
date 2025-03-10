@@ -58,7 +58,7 @@ const ItemView: React.FC = () => {
       try {
         await deleteItem(id);
         // Navigate back to items list
-        navigate('/management/items');
+        navigate('/themes/items');
       } catch (err) {
         setError('Failed to delete item. Please try again.');
         console.error('Error deleting item:', err);
@@ -83,7 +83,7 @@ const ItemView: React.FC = () => {
           {error || 'Item not found'}
         </div>
         <div className="mt-4">
-          <Link to="/management/items" className="text-blue-500 hover:underline flex items-center">
+          <Link to="/themes/items" className="text-blue-500 hover:underline flex items-center">
             <FaArrowLeft className="mr-2" /> Back to Items
           </Link>
         </div>
@@ -94,12 +94,12 @@ const ItemView: React.FC = () => {
   return (
     <div className="container mx-auto p-4 max-w-3xl">
       <div className="flex justify-between items-center mb-6">
-        <Link to="/management/items" className="text-blue-500 hover:underline flex items-center">
+        <Link to="/themes/items" className="text-blue-500 hover:underline flex items-center">
           <FaArrowLeft className="mr-2" /> Back to Items
         </Link>
         <div className="space-x-2">
           <Link
-            to={`/management/items/${id}/edit`}
+            to={`/themes/items/${id}/edit`}
             className="bg-yellow-500 hover:bg-yellow-700 text-white py-2 px-4 rounded inline-flex items-center"
           >
             <FaEdit className="mr-2" /> Edit

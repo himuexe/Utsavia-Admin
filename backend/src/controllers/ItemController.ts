@@ -1,7 +1,8 @@
-// src/controllers/itemController.ts
 import { Request, Response } from 'express';
 import { Item, IItem } from '../models/Item';
 import mongoose from 'mongoose';
+import { cloudinary, uploadItemImage } from '../config/cloudinary'; // Import Cloudinary and upload middleware
+import { handleUploadErrors } from '../middleware/uploadMiddleware'; // Import error handling middleware
 
 // Get all items with optional filtering and sorting
 export const getAllItems = async (req: Request, res: Response) => {
@@ -102,11 +103,32 @@ export const getItemById = async (req: Request, res: Response) => {
   }
 };
 
-// Create a new item
+// Create a new item with image upload
 export const createItem = async (req: Request, res: Response) => {
   try {
     const itemData = req.body;
-    
+
+    // Parse the prices JSON string back to an array if it's a string
+    if (typeof itemData.prices === 'string') {
+      try {
+        itemData.prices = JSON.parse(itemData.prices);
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid price data format',
+          error: 'Prices must be a valid JSON array'
+        });
+      }
+    }
+
+    // Check if an image file was uploaded
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'items', // Folder in Cloudinary
+      });
+      itemData.image = result.secure_url; // Save the image URL in the item data
+    }
+
     // Validation
     if (!itemData.name || !itemData.category || !itemData.prices || itemData.prices.length === 0) {
       return res.status(400).json({
@@ -136,13 +158,33 @@ export const createItem = async (req: Request, res: Response) => {
     });
   }
 };
-
-// Update an item
+// Update an item with image upload
 export const updateItem = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
-    
+
+    // Parse the prices JSON string back to an array if it's a string
+    if (typeof updateData.prices === 'string') {
+      try {
+        updateData.prices = JSON.parse(updateData.prices);
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid price data format',
+          error: 'Prices must be a valid JSON array'
+        });
+      }
+    }
+
+    // Check if an image file was uploaded
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'items', // Folder in Cloudinary
+      });
+      updateData.image = result.secure_url; // Save the new image URL in the update data
+    }
+
     // Find the item first to check if it exists
     const existingItem = await Item.findById(id);
     
@@ -151,6 +193,14 @@ export const updateItem = async (req: Request, res: Response) => {
         success: false,
         message: 'Item not found'
       });
+    }
+
+    // If updating the image, delete the old image from Cloudinary
+    if (req.file && existingItem.image) {
+      const publicId = existingItem.image.split('/').pop()?.split('.')[0];
+      if (publicId) {
+        await cloudinary.uploader.destroy(`items/${publicId}`);
+      }
     }
     
     // Update the item
@@ -211,7 +261,7 @@ export const softDeleteItem = async (req: Request, res: Response) => {
   }
 };
 
-// Hard delete an item (actual deletion from database)
+// Hard delete an item (actual deletion from database and Cloudinary)
 export const hardDeleteItem = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -223,6 +273,14 @@ export const hardDeleteItem = async (req: Request, res: Response) => {
         success: false,
         message: 'Item not found'
       });
+    }
+
+    // Delete the associated image from Cloudinary if it exists
+    if (item.image) {
+      const publicId = item.image.split('/').pop()?.split('.')[0];
+      if (publicId) {
+        await cloudinary.uploader.destroy(`items/${publicId}`);
+      }
     }
     
     // Hard delete

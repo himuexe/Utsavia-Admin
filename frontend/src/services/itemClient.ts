@@ -1,8 +1,4 @@
-// src/api/itemApi.ts
-import { api } from './authClient';
-
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7000/api';
-
 const API_URL = `${API_BASE_URL}/items`;
 
 export interface ItemPrice {
@@ -38,31 +34,124 @@ export const fetchItems = async (params?: {
   maxPrice?: number;
   search?: string;
 }) => {
-  const response = await api.get(API_URL, { params });
-  return response.data;
+  const queryParams = new URLSearchParams(params as Record<string, string>);
+  const response = await fetch(`${API_URL}?${queryParams.toString()}`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return await response.json();
 };
 
 export const fetchItemById = async (id: string) => {
-  const response = await api.get(`${API_URL}/${id}`);
-  return response.data;
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return await response.json();
 };
 
-export const createItem = async (itemData: ItemCreateInput) => {
-  const response = await api.post(API_URL, itemData);
-  return response.data;
+export const createItem = async (itemData: ItemCreateInput, imageFile?: File) => {
+  // Use FormData if there's an image to upload
+  if (imageFile) {
+    const formData = new FormData();
+    
+    // Add all item data as form fields
+    formData.append('name', itemData.name);
+    if (itemData.description) formData.append('description', itemData.description);
+    formData.append('category', typeof itemData.category === 'string' ? itemData.category : itemData.category._id);
+    formData.append('isActive', String(itemData.isActive));
+    
+    // Add prices as JSON string
+    formData.append('prices', JSON.stringify(itemData.prices));
+    
+    // Add the image file
+    formData.append('image', imageFile);
+    
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+    return await response.json();
+  } else {
+    // Use JSON if no image to upload
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(itemData),
+    });
+    return await response.json();
+  }
 };
 
-export const updateItem = async (id: string, itemData: ItemUpdateInput) => {
-  const response = await api.put(`${API_URL}/${id}`, itemData);
-  return response.data;
+export const updateItem = async (id: string, itemData: ItemUpdateInput, imageFile?: File) => {
+  // Use FormData if there's an image to upload
+  if (imageFile) {
+    const formData = new FormData();
+    
+    // Add all item data as form fields
+    if (itemData.name) formData.append('name', itemData.name);
+    if (itemData.description) formData.append('description', itemData.description);
+    if (itemData.category) {
+      formData.append('category', typeof itemData.category === 'string' ? itemData.category : itemData.category._id);
+    }
+    if (itemData.isActive !== undefined) formData.append('isActive', String(itemData.isActive));
+    
+    // Add prices as JSON string if provided
+    if (itemData.prices) {
+      formData.append('prices', JSON.stringify(itemData.prices));
+    }
+    
+    // Add the image file
+    formData.append('image', imageFile);
+    
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: 'PUT',
+      credentials: 'include',
+      body: formData,
+    });
+    return await response.json();
+  } else {
+    // Use JSON if no image to upload
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(itemData),
+    });
+    return await response.json();
+  }
 };
 
 export const deactivateItem = async (id: string) => {
-  const response = await api.patch(`${API_URL}/${id}/deactivate`);
-  return response.data;
+  const response = await fetch(`${API_URL}/${id}/deactivate`, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return await response.json();
 };
 
 export const deleteItem = async (id: string) => {
-  const response = await api.delete(`${API_URL}/${id}`);
-  return response.data;
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: 'DELETE',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return await response.json();
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   createItem, 
@@ -9,17 +9,20 @@ import {
 } from '../../services/itemClient';
 import { categoryService, Category } from '../../services/categoryClient';
 import Spinner from '../common/Spinner';
-import { FaPlus, FaTimes } from 'react-icons/fa';
+import { FaPlus, FaTimes, FaUpload, FaImage } from 'react-icons/fa';
 
 const ItemForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const isEditMode = Boolean(id);
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [loading, setLoading] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = useState<ItemCreateInput>({
@@ -59,6 +62,11 @@ const ItemForm: React.FC = () => {
             image: item.image || '',
             isActive: item.isActive
           });
+          
+          // Set image preview if image exists
+          if (item.image) {
+            setImagePreview(item.image);
+          }
         }
       } catch (err) {
         setError('Failed to load data. Please try again.');
@@ -81,6 +89,41 @@ const ItemForm: React.FC = () => {
       setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  // Handle image selection
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      
+      // Create a preview URL for the selected image
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+    }
+  };
+
+  // Trigger file input click
+  const handleImageClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // Remove selected image
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    
+    // If in edit mode and there was an existing image, also clear it
+    if (isEditMode && formData.image) {
+      setFormData(prev => ({ ...prev, image: '' }));
+    }
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -135,14 +178,14 @@ const ItemForm: React.FC = () => {
       
       if (isEditMode && id) {
         // Update existing item
-        await updateItem(id, formData);
+        await updateItem(id, formData, imageFile || undefined);
       } else {
         // Create new item
-        await createItem(formData);
+        await createItem(formData, imageFile || undefined);
       }
       
       // Navigate back to items list
-      navigate('/management/items');
+      navigate('/themes/items');
     } catch (err) {
       setError('Failed to save item. Please try again.');
       console.error('Error saving item:', err);
@@ -219,18 +262,61 @@ const ItemForm: React.FC = () => {
             </select>
           </div>
           
+          {/* Image Upload */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Image URL
+              Item Image
             </label>
-            <input
-              type="text"
-              name="image"
-              value={formData.image}
-              onChange={handleInputChange}
-              className="w-full p-2 border rounded"
-              placeholder="https://example.com/image.jpg"
-            />
+            
+            <div className="flex items-start">
+              {/* Hidden file input */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+                accept="image/jpeg,image/png,image/gif"
+                className="hidden"
+              />
+              
+              {/* Image preview or placeholder */}
+              <div className="flex-1 flex flex-col items-center">
+                {imagePreview ? (
+                  <div className="relative">
+                    <img 
+                      src={imagePreview} 
+                      alt="Item preview" 
+                      className="h-40 w-auto object-contain border rounded p-1" 
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full"
+                      title="Remove image"
+                    >
+                      <FaTimes size={12} />
+                    </button>
+                  </div>
+                ) : (
+                  <div 
+                    onClick={handleImageClick}
+                    className="h-40 w-full flex flex-col items-center justify-center border border-dashed rounded p-4 cursor-pointer hover:bg-gray-50"
+                  >
+                    <FaImage size={40} className="text-gray-300 mb-2" />
+                    <p className="text-sm text-gray-500">Click to upload image</p>
+                  </div>
+                )}
+                
+                {!imagePreview && (
+                  <button
+                    type="button"
+                    onClick={handleImageClick}
+                    className="mt-2 bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-3 rounded flex items-center text-sm"
+                  >
+                    <FaUpload className="mr-1" /> Upload Image
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
           
           <div className="flex items-center mb-4">
@@ -314,7 +400,7 @@ const ItemForm: React.FC = () => {
         <div className="flex justify-end space-x-3">
           <button
             type="button"
-            onClick={() => navigate('/management/items')}
+            onClick={() => navigate('/themes/items')}
             className="bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded"
             disabled={submitting}
           >

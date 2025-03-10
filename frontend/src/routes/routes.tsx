@@ -62,19 +62,19 @@ const router = createBrowserRouter([
       },
       // Item routes
       {
-        path: 'management/items',
+        path: 'themes/items',
         element: <Items />,
       },
       {
-        path: 'management/items/new',
+        path: 'themes/items/new',
         element: <ItemFormPage />,
       },
       {
-        path: 'management/items/:id',
+        path: 'themes/items/:id',
         element: <ItemViewPage />,
       },
       {
-        path: 'management/items/:id/edit',
+        path: 'themes/items/:id/edit',
         element: <ItemFormPage />,
       },
       {
