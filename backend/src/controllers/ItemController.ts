@@ -15,7 +15,8 @@ export const getAllItems = async (req: Request, res: Response) => {
       city,
       minPrice,
       maxPrice,
-      search
+      search,
+      vendor // Add vendor filter
     } = req.query;
 
     // Build filter object
@@ -31,6 +32,10 @@ export const getAllItems = async (req: Request, res: Response) => {
 
     if (search) {
       filter.name = { $regex: search, $options: 'i' };
+    }
+
+    if (vendor) {
+      filter.vendor = new mongoose.Types.ObjectId(vendor as string);
     }
     
     // Price filtering is more complex as prices are in an array
@@ -58,6 +63,7 @@ export const getAllItems = async (req: Request, res: Response) => {
     const items = await Item.find(filter)
       .sort(sort)
       .populate('category', 'name')
+      .populate('vendor', 'name') // Populate vendor information
       .exec();
 
     res.status(200).json({
@@ -80,7 +86,9 @@ export const getItemById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     
-    const item = await Item.findById(id).populate('category', 'name');
+    const item = await Item.findById(id)
+      .populate('category', 'name')
+      .populate('vendor', 'name'); // Populate vendor information
     
     if (!item) {
       return res.status(404).json({
@@ -141,8 +149,10 @@ export const createItem = async (req: Request, res: Response) => {
     const newItem = new Item(itemData);
     await newItem.save();
     
-    // Populate category information before sending response
-    const populatedItem = await Item.findById(newItem._id).populate('category', 'name');
+    // Populate category and vendor information before sending response
+    const populatedItem = await Item.findById(newItem._id)
+      .populate('category', 'name')
+      .populate('vendor', 'name');
     
     res.status(201).json({
       success: true,
@@ -158,6 +168,7 @@ export const createItem = async (req: Request, res: Response) => {
     });
   }
 };
+
 // Update an item with image upload
 export const updateItem = async (req: Request, res: Response) => {
   try {
@@ -208,7 +219,9 @@ export const updateItem = async (req: Request, res: Response) => {
       id,
       updateData,
       { new: true, runValidators: true }
-    ).populate('category', 'name');
+    )
+      .populate('category', 'name')
+      .populate('vendor', 'name'); // Populate vendor information
     
     res.status(200).json({
       success: true,

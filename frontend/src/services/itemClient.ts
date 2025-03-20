@@ -15,6 +15,10 @@ export interface Item {
     _id: string;
     name: string;
   } | string;
+  vendor?: {
+    _id: string;
+    name: string;
+  }
   image?: string;
   isActive: boolean;
   createdAt: string;

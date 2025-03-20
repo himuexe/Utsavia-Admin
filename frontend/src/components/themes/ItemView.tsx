@@ -71,6 +71,10 @@ const ItemView: React.FC = () => {
     if (!item || !item.category) return 'N/A';
     return typeof item.category === 'string' ? item.category : item.category.name;
   };
+  const getVendorName = () => {
+    if (!item || !item.vendor) return 'Admin';
+    return typeof item.vendor === 'string' ? item.category : item.vendor.name;
+  };
 
   if (loading) {
     return <Spinner />;
@@ -144,6 +148,7 @@ const ItemView: React.FC = () => {
             </span>
           </div>
           <p className="text-gray-500 mt-2">Category: {getCategoryName()}</p>
+          <p className="text-gray-500 mt-2">Vendor: {getVendorName()}</p>
         </div>
 
         {/* Item Image */}

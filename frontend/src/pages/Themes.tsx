@@ -1,8 +1,8 @@
-// src/pages/Items.tsx
 import React, { useState, useEffect } from 'react';
-import { Link, } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { fetchItems, deactivateItem, deleteItem, Item } from '../services/itemClient';
 import { categoryService, Category } from '../services/categoryClient';
+import { vendorClient as vendorService , VendorData} from '../services/vendorClient'; 
 import Spinner from '../components/common/Spinner';
 import { FaEdit, FaTrash, FaEye, FaPlus } from 'react-icons/fa';
 import { formatDate } from '../utils/formatters';
@@ -12,28 +12,32 @@ const Items: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
-  
+  const [vendors, setVendors] = useState<VendorData[]>([]); // State for vendors
+
   // Sorting and filtering states
   const [sortField, setSortField] = useState<string>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [filterCategory, setFilterCategory] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
+  const [filterVendor, setFilterVendor] = useState<string>(''); // Vendor filter
   const [searchTerm, setSearchTerm] = useState<string>('');
-  
 
-  // Load items and categories
+  // Load items, categories, and vendors
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
-        
-        // Load categories for filtering using categoryService
+
+        // Load categories
         const categoriesResponse = await categoryService.getAll();
         setCategories(categoriesResponse.data as Category[]);
-        
-        // Load items with sorting and filtering
+
+        // Load vendors
+        const vendorsResponse = await vendorService.getAllVendors();
+        setVendors(vendorsResponse.data as VendorData[]);
+
+        // Load items
         await loadItems();
-        
       } catch (err) {
         setError('Failed to load data. Please try again.');
         console.error('Error loading data:', err);
@@ -41,7 +45,7 @@ const Items: React.FC = () => {
         setLoading(false);
       }
     };
-    
+
     loadData();
   }, []);
 
@@ -50,21 +54,25 @@ const Items: React.FC = () => {
     try {
       const params: any = {
         sortBy: sortField,
-        sortOrder: sortOrder
+        sortOrder: sortOrder,
       };
-      
+
       if (filterCategory) {
         params.category = filterCategory;
       }
-      
+
       if (filterStatus) {
         params.isActive = filterStatus === 'active';
       }
-      
+
+      if (filterVendor) {
+        params.vendor = filterVendor; // Add vendor filter
+      }
+
       if (searchTerm) {
         params.search = searchTerm;
       }
-      
+
       const response = await fetchItems(params);
       setItems(response.data);
     } catch (err) {
@@ -84,8 +92,9 @@ const Items: React.FC = () => {
     setSortOrder('desc');
     setFilterCategory('');
     setFilterStatus('');
+    setFilterVendor('');
     setSearchTerm('');
-    
+
     // Load items with reset filters
     setTimeout(() => {
       loadItems();
@@ -97,7 +106,6 @@ const Items: React.FC = () => {
     if (window.confirm('Are you sure you want to deactivate this item?')) {
       try {
         await deactivateItem(id);
-        // Refresh the items list
         loadItems();
       } catch (err) {
         setError('Failed to deactivate item. Please try again.');
@@ -111,7 +119,6 @@ const Items: React.FC = () => {
     if (window.confirm('Are you sure you want to permanently delete this item? This action cannot be undone.')) {
       try {
         await deleteItem(id);
-        // Refresh the items list
         loadItems();
       } catch (err) {
         setError('Failed to delete item. Please try again.');
@@ -126,12 +133,18 @@ const Items: React.FC = () => {
     return typeof item.category === 'string' ? item.category : item.category.name;
   };
 
+  // Format vendor name
+  const getVendorName = (item: Item) => {
+    if (!item.vendor) return 'Admin';
+    return typeof item.vendor === 'string' ? item.vendor : item.vendor.name;
+  };
+
   // Format price display
   const formatPrices = (prices: { city: string; price: number }[]) => {
     if (!prices || prices.length === 0) return 'No prices';
-    
-    return prices.map(p => `${p.city}: ₹${p.price}`).join(', ');
+    return prices.map((p) => `${p.city}: ₹${p.price}`).join(', ');
   };
+
   if (loading) {
     return <Spinner />;
   }
@@ -140,8 +153,8 @@ const Items: React.FC = () => {
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Items Management</h1>
-        <Link 
-          to="/themes/items/new" 
+        <Link
+          to="/themes/items/new"
           className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded flex items-center"
         >
           <FaPlus className="mr-2" /> Add New Item
@@ -157,7 +170,7 @@ const Items: React.FC = () => {
       {/* Filters Section */}
       <div className="bg-gray-100 p-4 rounded-lg mb-6">
         <h2 className="text-lg font-semibold mb-3">Filters & Sorting</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
@@ -169,7 +182,7 @@ const Items: React.FC = () => {
               className="w-full p-2 border rounded"
             />
           </div>
-          
+
           {/* Category Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
@@ -186,7 +199,24 @@ const Items: React.FC = () => {
               ))}
             </select>
           </div>
-          
+
+          {/* Vendor Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
+            <select
+              value={filterVendor}
+              onChange={(e) => setFilterVendor(e.target.value)}
+              className="w-full p-2 border rounded"
+            >
+              <option value="">All Vendors</option>
+              {vendors.map((vendor) => (
+                <option key={vendor._id} value={vendor._id}>
+                  {vendor.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Status Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
@@ -198,33 +228,6 @@ const Items: React.FC = () => {
               <option value="">All Statuses</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
-            </select>
-          </div>
-          
-          {/* Sort Field */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-            <select
-              value={sortField}
-              onChange={(e) => setSortField(e.target.value)}
-              className="w-full p-2 border rounded"
-            >
-              <option value="name">Name</option>
-              <option value="createdAt">Created Date</option>
-              <option value="updatedAt">Updated Date</option>
-            </select>
-          </div>
-          
-          {/* Sort Order */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
-            <select
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-              className="w-full p-2 border rounded"
-            >
-              <option value="asc">Ascending</option>
-              <option value="desc">Descending</option>
             </select>
           </div>
         </div>
@@ -257,6 +260,7 @@ const Items: React.FC = () => {
               <tr>
                 <th className="py-3 px-4 border-b text-left">Name</th>
                 <th className="py-3 px-4 border-b text-left">Category</th>
+                <th className="py-3 px-4 border-b text-left">Vendor</th>
                 <th className="py-3 px-4 border-b text-left">Prices</th>
                 <th className="py-3 px-4 border-b text-left">Status</th>
                 <th className="py-3 px-4 border-b text-left">Created At</th>
@@ -279,6 +283,7 @@ const Items: React.FC = () => {
                     </div>
                   </td>
                   <td className="py-3 px-4 border-b">{getCategoryName(item)}</td>
+                  <td className="py-3 px-4 border-b">{getVendorName(item)}</td>
                   <td className="py-3 px-4 border-b">{formatPrices(item.prices)}</td>
                   <td className="py-3 px-4 border-b">
                     <span

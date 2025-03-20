@@ -179,7 +179,7 @@ const BookingDashboard: React.FC = () => {
 
             <div className="bg-white p-6 rounded shadow">
               <h3 className="text-lg font-medium text-gray-500">
-                Total Revenue
+                Total Confirmed Revenue
               </h3>
               <p className="text-3xl font-bold mt-2">
                 {formatCurrency(stats.revenue.totalRevenue || 0)}
