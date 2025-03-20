@@ -6,6 +6,7 @@ interface IBookingItem {
   price: number;
   date: Date;
   timeSlot: string;
+  vendorName?: string;
 }
 
 interface IAddress {

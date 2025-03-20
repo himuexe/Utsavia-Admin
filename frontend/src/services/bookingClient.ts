@@ -5,6 +5,7 @@ export interface BookingItem {
   price: number;
   date: Date;
   timeSlot: string;
+  vendorName?: string;
 }
 
 export interface Address {

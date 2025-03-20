@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import '../models/user'; 
 import { Booking } from '../models/booking';
+import { Item } from '../models/item';
+import { Vendor } from '../models/vendor';
 
 // Get all bookings with pagination, filtering and sorting
 export const getAllBookings = async (req: Request, res: Response) => {
@@ -61,13 +63,33 @@ export const getAllBookings = async (req: Request, res: Response) => {
       .sort(sort)
       .skip(skip)
       .limit(limit)
-      .populate('userId', 'firstName lastName primaryEmail'); // Correct field names
+      .populate('userId', 'firstName lastName primaryEmail');
 
     // Get total count for pagination
     const total = await Booking.countDocuments(filter);
 
+    // For each booking, find vendor names for items
+    const bookingsWithVendors = await Promise.all(
+      bookings.map(async (booking) => {
+        const bookingObj = booking.toObject();
+        
+        // Get vendor names for each item
+        for (let i = 0; i < bookingObj.items.length; i++) {
+          const item = await Item.findOne({ name: bookingObj.items[i].itemName });
+          if (item && item.vendor) {
+            const vendor = await Vendor.findById(item.vendor);
+            bookingObj.items[i].vendorName = vendor ? vendor.name : 'Admin';
+          } else {
+            bookingObj.items[i].vendorName = 'Admin';
+          }
+        }
+        
+        return bookingObj;
+      })
+    );
+
     res.status(200).json({
-      bookings,
+      bookings: bookingsWithVendors,
       pagination: {
         total,
         page,
@@ -88,14 +110,27 @@ export const getBookingById = async (req: Request, res: Response) => {
   try {
     const booking = await Booking.findById(req.params.id).populate(
       'userId',
-      'firstName lastName primaryEmail' // Correct field names
+      'firstName lastName primaryEmail'
     );
 
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
     }
 
-    res.status(200).json(booking);
+    const bookingObj = booking.toObject();
+    
+    // Get vendor names for each item
+    for (let i = 0; i < bookingObj.items.length; i++) {
+      const item = await Item.findOne({ name: bookingObj.items[i].itemName });
+      if (item && item.vendor) {
+        const vendor = await Vendor.findById(item.vendor);
+        bookingObj.items[i].vendorName = vendor ? vendor.name : 'Admin';
+      } else {
+        bookingObj.items[i].vendorName = 'Admin+';
+      }
+    }
+
+    res.status(200).json(bookingObj);
   } catch (error) {
     res.status(500).json({
       message: 'Error fetching booking',
@@ -130,7 +165,20 @@ export const updateBooking = async (req: Request, res: Response) => {
     
     await booking.save();
     
-    res.status(200).json(booking);
+    const updatedBooking = booking.toObject();
+    
+    // Get vendor names for each item
+    for (let i = 0; i < updatedBooking.items.length; i++) {
+      const item = await Item.findOne({ name: updatedBooking.items[i].itemName });
+      if (item && item.vendor) {
+        const vendor = await Vendor.findById(item.vendor);
+        updatedBooking.items[i].vendorName = vendor ? vendor.name : 'Admin';
+      } else {
+        updatedBooking.items[i].vendorName = 'Admin';
+      }
+    }
+    
+    res.status(200).json(updatedBooking);
   } catch (error) {
     res.status(500).json({
       message: 'Error updating booking',

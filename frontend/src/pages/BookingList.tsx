@@ -267,6 +267,9 @@ const BookingListPage: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Address
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Vendors
+                </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
@@ -313,6 +316,15 @@ const BookingListPage: React.FC = () => {
                     ) : (
                       <div className="text-sm text-gray-500">No address provided</div>
                     )}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900">
+                      {booking.items && booking.items.map((item, index) => (
+                        <div key={index} className="mb-1">
+                          {item.vendorName} 
+                        </div>
+                      ))}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button 
