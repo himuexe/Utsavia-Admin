@@ -5,7 +5,8 @@ import {
   FaCalendarAlt, 
   FaCog, 
   FaPalette, 
-  FaTimes, 
+  FaTimes,
+  FaUser, 
 } from 'react-icons/fa';
 
 interface SidebarProps {
@@ -19,6 +20,7 @@ const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
     { name: 'Bookings', href: '/bookings', icon: FaCalendarAlt, description: 'Manage reservations' },
     { name: 'Management', href: '/management', icon: FaCog, description: 'System settings' },
     { name: 'Themes', href: '/themes', icon: FaPalette, description: 'Customize appearance' },
+    { name: 'Vendors', href: '/vendors', icon: FaUser, description: 'Manage vendors' },
   ];
 
   return (

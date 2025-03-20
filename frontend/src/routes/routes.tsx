@@ -12,6 +12,8 @@ import ItemFormPage from '../components/themes/ItemForm';
 import ItemViewPage from '../components/themes/ItemView';
 import Themes from '../pages/Themes';
 import LoginPage from '../pages/Login';
+import VendorListPage from '../pages/Vendor';
+import VendorFormPage from '../components/vendor/VendorForm';
 import ProtectedRoute from './ProtectedRoute';
 import { AuthProvider } from '../context/authContext';
 
@@ -80,6 +82,15 @@ const router = createBrowserRouter([
       {
         path: 'themes',
         element: <Themes />,
+      },
+      // Vendor routes
+      {
+        path: 'vendors',
+        element: <VendorListPage />,
+      },
+      {
+        path: 'vendors/:id',
+        element: <VendorFormPage/>,
       },
     ],
   },
