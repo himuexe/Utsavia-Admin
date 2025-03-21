@@ -7,7 +7,6 @@ const VendorListPage: React.FC = () => {
   const [vendors, setVendors] = useState<VendorData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [totalVendors, setTotalVendors] = useState<number>(0);
   const cityOptions = ['All','Delhi NCR', 'Mumbai', 'Bangalore', 'Chennai', 'Jaipur', 'Hyderabad', 'Pune', 'Across India','Indore','Lucknow','Chandigarh','Ahmedabad'];
   
   const [filters, setFilters] = useState<VendorFilters>({
@@ -23,7 +22,6 @@ const VendorListPage: React.FC = () => {
 
       if (response && response.data) {
         setVendors(response.data);
-        setTotalVendors(response.count || response.data.length);
         setError(null);
       } else {
         setVendors([]);
