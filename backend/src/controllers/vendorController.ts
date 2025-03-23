@@ -8,7 +8,6 @@ export const getAllVendors = async (req: Request, res: Response) => {
     const {
       city,
       isActive,
-      isDiscarded,
       companyName,
       sortBy = 'createdAt',
       sortOrder = 'desc',
@@ -24,10 +23,6 @@ export const getAllVendors = async (req: Request, res: Response) => {
 
     if (isActive !== undefined) {
       filter.isActive = isActive === 'true';
-    }
-
-    if (isDiscarded !== undefined) {
-      filter.isDiscarded = isDiscarded === 'true';
     }
 
     if (companyName) {
@@ -171,46 +166,6 @@ export const toggleVendorStatus = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: 'Failed to update vendor status',
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-};
-
-// Mark vendor as discarded
-export const markVendorDiscarded = async (req: Request, res: Response) => {
-  try {
-    const vendorId = req.params.id;
-    const { isDiscarded } = req.body;
-
-    if (isDiscarded === undefined) {
-      return res.status(400).json({
-        success: false,
-        message: 'isDiscarded status is required'
-      });
-    }
-
-    const updatedVendor = await Vendor.findByIdAndUpdate(
-      vendorId,
-      { isDiscarded },
-      { new: true }
-    ).select('-password');
-
-    if (!updatedVendor) {
-      return res.status(404).json({
-        success: false,
-        message: 'Vendor not found'
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: updatedVendor
-    });
-  } catch (error) {
-    console.error('Error marking vendor as discarded:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to mark vendor as discarded',
       error: error instanceof Error ? error.message : 'Unknown error'
     });
   }

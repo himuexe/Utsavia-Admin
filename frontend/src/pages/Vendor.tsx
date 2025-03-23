@@ -72,16 +72,6 @@ const VendorListPage: React.FC = () => {
     }
   };
 
-  // Mark vendor as discarded
-  const handleMarkDiscarded = async (id: string, currentStatus: boolean) => {
-    try {
-      await vendorClient.markVendorDiscarded(id, !currentStatus);
-      fetchVendors(); // Refresh vendors list
-    } catch (err) {
-      setError('Failed to update vendor status. Please try again.');
-      console.error(err);
-    }
-  };
 
   // Delete vendor handler
   const handleDeleteVendor = async (id: string) => {
@@ -151,21 +141,6 @@ const VendorListPage: React.FC = () => {
             </select>
           </div>
           
-          {/* Discarded filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Discarded</label>
-            <select
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              value={filters.isDiscarded === undefined ? 'all' : (filters.isDiscarded ? 'yes' : 'no')}
-              onChange={(e) => {
-                const value = e.target.value;
-                handleFilterChange('isDiscarded', value === 'all' ? undefined : value === 'yes')
-              }}
-            >
-              <option value="all">All</option>
-              <option value="yes">Yes</option>
-            </select>
-          </div>
           
           {/* City filter */}
           <div>
@@ -287,15 +262,12 @@ const VendorListPage: React.FC = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {vendors.map((vendor) => (
-                <tr key={vendor._id} className={`hover:bg-gray-50 ${vendor.isDiscarded ? 'bg-gray-100' : ''}`}>
+                <tr key={vendor._id} className={`hover:bg-gray-50 `}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {formatDate(vendor.createdAt)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{vendor.name}</div>
-                    {vendor.isDiscarded && (
-                      <div className="text-xs text-red-600 font-medium mt-1">DISCARDED</div>
-                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {vendor.companyName || 'N/A'}
@@ -334,12 +306,6 @@ const VendorListPage: React.FC = () => {
                       onClick={() => handleToggleStatus(vendor._id as string, vendor.isActive as boolean)}
                     >
                       {vendor.isActive ? 'Deactivate' : 'Activate'}
-                    </button>
-                    <button 
-                      className={`mr-3 ${vendor.isDiscarded ? 'text-purple-600 hover:text-purple-900' : 'text-gray-600 hover:text-gray-900'}`}
-                      onClick={() => handleMarkDiscarded(vendor._id as string, vendor.isDiscarded as boolean)}
-                    >
-                      {vendor.isDiscarded ? 'Restore' : 'Discard'}
                     </button>
                     <button 
                       className="text-red-600 hover:text-red-900"

@@ -21,7 +21,6 @@ export interface IVendor extends Document {
   location?: string;
   city?: string;
   isActive?: boolean;
-  isDiscarded?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -65,7 +64,6 @@ const VendorSchema = new Schema<IVendor>(
     location: { type: String },
     city: { type: String, trim: true },
     isActive: { type: Boolean, default: true },
-    isDiscarded: { type: Boolean, default: false }
   },
   { collection: 'vendors', timestamps: true }
 );

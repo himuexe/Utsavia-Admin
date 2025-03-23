@@ -1,4 +1,3 @@
-// Sidebar.tsx
 import { NavLink } from 'react-router-dom';
 import { 
   FaHome, 
@@ -8,6 +7,7 @@ import {
   FaTimes,
   FaUser, 
 } from 'react-icons/fa';
+import { Button } from '../components/ui/button';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -18,7 +18,7 @@ const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
   const navigation = [
     { name: 'Dashboard', href: '/', icon: FaHome, description: 'View analytics overview' },
     { name: 'Bookings', href: '/bookings', icon: FaCalendarAlt, description: 'Manage reservations' },
-    { name: 'Management', href: '/management', icon: FaCog, description: 'System settings' },
+    { name: 'Categories', href: '/management', icon: FaCog, description: 'System settings' },
     { name: 'Themes', href: '/themes', icon: FaPalette, description: 'Customize appearance' },
     { name: 'Vendors', href: '/vendors', icon: FaUser, description: 'Manage vendors' },
   ];
@@ -36,13 +36,15 @@ const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
         <div className="flex items-center">
           <h1 className="text-lg font-bold text-gray-800">Utsavia Admin</h1>
         </div>
-        <button 
+        <Button 
           onClick={toggleSidebar} 
-          className="p-1 rounded-md text-gray-500 hover:text-indigo-600 md:hidden focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
           aria-label="Close sidebar"
         >
           <FaTimes className="w-5 h-5" />
-        </button>
+        </Button>
       </div>
       
       <div className="px-3 py-4">

@@ -5,7 +5,6 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://utsavia-admin-serv
 export interface VendorFilters {
   city?: string;
   isActive?: boolean;
-  isDiscarded?: boolean;
   companyName?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
@@ -30,7 +29,6 @@ export interface VendorData {
   location?: string;
   city?: string;
   isActive?: boolean;
-  isDiscarded?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -122,24 +120,6 @@ export const vendorClient = {
       return handleResponse(response);
     } catch (error) {
       console.error(`Error toggling status for vendor with ID ${id}:`, error);
-      throw error;
-    }
-  },
-  
-  // Mark vendor as discarded
-  markVendorDiscarded: async (id: string, isDiscarded: boolean) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/vendor/${id}/discard`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ isDiscarded }),
-      });
-      return handleResponse(response);
-    } catch (error) {
-      console.error(`Error marking vendor with ID ${id} as discarded:`, error);
       throw error;
     }
   },

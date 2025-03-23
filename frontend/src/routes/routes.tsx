@@ -2,7 +2,6 @@ import { createBrowserRouter } from 'react-router-dom';
 import MainLayout from '../layout/MainLayout';
 import Dashboard from '../pages/Dashboard';
 import Bookings from '../pages/BookingList';
-import BookingFormPage from '../components/booking/BookingForm';
 import BookingDetailsPage from '../components/booking/BookingDetails';
 import Categories from '../pages/Categories';
 import CategoryFormPage from '../components/category/CategoryForm';
@@ -40,10 +39,6 @@ const router = createBrowserRouter([
       {
         path: '/bookings/:id',
         element: <BookingDetailsPage />,
-      },
-      {
-        path: 'bookings/edit/:id',
-        element: <BookingFormPage />,
       },
       {
         path: 'management',

@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { bookingApi, Booking, BookingFilters } from '../services/bookingClient';
 import { format } from 'date-fns';
+import { Input } from '@/components/ui/input'; // shadcn Input component
+import { Button } from '@/components/ui/button'; // shadcn Button component
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // shadcn Card component
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'; // shadcn Table component
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // shadcn Select component
 
 const BookingListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -116,97 +121,102 @@ const BookingListPage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Bookings Management</h1>
+        <h1 className="text-2xl font-bold">Bookings</h1>
       </div>
       
       {/* Filters */}
-      <div className="bg-white p-4 rounded shadow mb-6">
-        <h2 className="text-lg font-semibold mb-3">Filters</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Status filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              value={filters.status || 'all'}
-              onChange={(e) => handleFilterChange('status', e.target.value === 'all' ? undefined : e.target.value)}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Filters</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Status filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <Select
+                value={filters.status || 'all'}
+                onValueChange={(value) => handleFilterChange('status', value === 'all' ? undefined : value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {statusOptions.map(status => (
+                    <SelectItem key={status} value={status}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Date range filters */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+              <Input
+                type="date"
+                value={filters.dateFrom || ''}
+                onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+              <Input
+                type="date"
+                value={filters.dateTo || ''}
+                onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+              />
+            </div>
+            
+            {/* Amount range filters */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Min Amount</label>
+              <Input
+                type="number"
+                value={filters.minAmount || ''}
+                onChange={(e) => handleFilterChange('minAmount', e.target.value ? Number(e.target.value) : undefined)}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Max Amount</label>
+              <Input
+                type="number"
+                value={filters.maxAmount || ''}
+                onChange={(e) => handleFilterChange('maxAmount', e.target.value ? Number(e.target.value) : undefined)}
+              />
+            </div>
+            
+            {/* Search */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+              <Input
+                type="text"
+                value={filters.search || ''}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+                placeholder="Search city, street, item..."
+              />
+            </div>
+          </div>
+          
+          <div className="mt-4 flex justify-end">
+            <Button
+              variant="outline"
+              className="mr-2"
+              onClick={resetFilters}
             >
-              {statusOptions.map(status => (
-                <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>
-              ))}
-            </select>
+              Reset Filters
+            </Button>
+            <Button
+              onClick={fetchBookings}
+            >
+              Apply Filters
+            </Button>
           </div>
-          
-          {/* Date range filters */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date From</label>
-            <input
-              type="date"
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              value={filters.dateFrom || ''}
-              onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date To</label>
-            <input
-              type="date"
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              value={filters.dateTo || ''}
-              onChange={(e) => handleFilterChange('dateTo', e.target.value)}
-            />
-          </div>
-          
-          {/* Amount range filters */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Min Amount</label>
-            <input
-              type="number"
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              value={filters.minAmount || ''}
-              onChange={(e) => handleFilterChange('minAmount', e.target.value ? Number(e.target.value) : undefined)}
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Max Amount</label>
-            <input
-              type="number"
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              value={filters.maxAmount || ''}
-              onChange={(e) => handleFilterChange('maxAmount', e.target.value ? Number(e.target.value) : undefined)}
-            />
-          </div>
-          
-          {/* Search */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
-            <input
-              type="text"
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              value={filters.search || ''}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-              placeholder="Search city, street, item..."
-            />
-          </div>
-        </div>
-        
-        <div className="mt-4 flex justify-end">
-          <button
-            className="bg-gray-200 text-gray-700 px-4 py-2 rounded mr-2 hover:bg-gray-300"
-            onClick={resetFilters}
-          >
-            Reset Filters
-          </button>
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            onClick={fetchBookings}
-          >
-            Apply Filters
-          </button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
       
       {/* Error message */}
       {error && (
@@ -216,83 +226,73 @@ const BookingListPage: React.FC = () => {
       )}
       
       {/* Bookings table */}
-      <div className="bg-white rounded shadow overflow-x-auto">
-        {loading ? (
-          <div className="p-8 text-center">Loading bookings...</div>
-        ) : !bookings || bookings.length === 0 ? (
-          <div className="p-8 text-center">No bookings found. Try adjusting your filters.</div>
-        ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSortChange('createdAt')}
-                >
-                  <div className="flex items-center">
-                    Date
-                    {filters.sortField === 'createdAt' && (
-                      <span className="ml-1">{filters.sortOrder === 'asc' ? '↑' : '↓'}</span>
-                    )}
-                  </div>
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Customer
-                </th>
-                <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSortChange('totalAmount')}
-                >
-                  <div className="flex items-center">
-                    Amount
-                    {filters.sortField === 'totalAmount' && (
-                      <span className="ml-1">{filters.sortOrder === 'asc' ? '↑' : '↓'}</span>
-                    )}
-                  </div>
-                </th>
-                <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSortChange('status')}
-                >
-                  <div className="flex items-center">
-                    Status
-                    {filters.sortField === 'status' && (
-                      <span className="ml-1">{filters.sortOrder === 'asc' ? '↑' : '↓'}</span>
-                    )}
-                  </div>
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Items
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Address
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Vendors
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {bookings.map((booking) => (
-                <tr key={booking._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(booking.createdAt)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{booking.userId?.firstName || 'Unknown'}</div>
-                    <div className="text-sm text-gray-500">{booking.userId?.primaryEmail || 'No email'}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ₹{booking.totalAmount.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {renderStatusBadge(booking.status)}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">
+      <Card>
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="p-8 text-center">Loading bookings...</div>
+          ) : !bookings || bookings.length === 0 ? (
+            <div className="p-8 text-center">No bookings found. Try adjusting your filters.</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSortChange('createdAt')}
+                  >
+                    <div className="flex items-center">
+                      Date
+                      {filters.sortField === 'createdAt' && (
+                        <span className="ml-1">{filters.sortOrder === 'asc' ? '↑' : '↓'}</span>
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSortChange('totalAmount')}
+                  >
+                    <div className="flex items-center">
+                      Amount
+                      {filters.sortField === 'totalAmount' && (
+                        <span className="ml-1">{filters.sortOrder === 'asc' ? '↑' : '↓'}</span>
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSortChange('status')}
+                  >
+                    <div className="flex items-center">
+                      Status
+                      {filters.sortField === 'status' && (
+                        <span className="ml-1">{filters.sortOrder === 'asc' ? '↑' : '↓'}</span>
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead>Items</TableHead>
+                  <TableHead>Address</TableHead>
+                  <TableHead>Vendors</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {bookings.map((booking) => (
+                  <TableRow key={booking._id} className="hover:bg-gray-50">
+                    <TableCell className="whitespace-nowrap">
+                      {formatDate(booking.createdAt)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="font-medium">{booking.userId?.firstName || 'Unknown'}</div>
+                      <div className="text-sm text-gray-500">{booking.userId?.primaryEmail || 'No email'}</div>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      ₹{booking.totalAmount.toFixed(2)}
+                    </TableCell>
+                    <TableCell>
+                      {renderStatusBadge(booking.status)}
+                    </TableCell>
+                    <TableCell>
                       {booking.items && booking.items.map((item, index) => (
                         <div key={index} className="mb-1">
                           {item.itemName} - ₹{item.price.toFixed(2)}
@@ -301,57 +301,51 @@ const BookingListPage: React.FC = () => {
                           </div>
                         </div>
                       ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    {booking.address ? (
-                      <>
-                        <div className="text-sm text-gray-900">
-                          {booking.address.street}, {booking.address.city}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {booking.address.state}, {booking.address.zipCode}, {booking.address.country}
-                        </div>
-                      </>
-                    ) : (
-                      <div className="text-sm text-gray-500">No address provided</div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">
+                    </TableCell>
+                    <TableCell>
+                      {booking.address ? (
+                        <>
+                          <div className="font-medium">
+                            {booking.address.street}, {booking.address.city}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {booking.address.state}, {booking.address.zipCode}, {booking.address.country}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-sm text-gray-500">No address provided</div>
+                      )}
+                    </TableCell>
+                    <TableCell>
                       {booking.items && booking.items.map((item, index) => (
                         <div key={index} className="mb-1">
                           {item.vendorName} 
                         </div>
                       ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button 
-                      className="text-blue-600 hover:text-blue-900 mr-3"
-                      onClick={() => navigate(`/bookings/${booking._id}`)}
-                    >
-                      View
-                    </button>
-                    <button 
-                      className="text-indigo-600 hover:text-indigo-900 mr-3"
-                      onClick={() => navigate(`/bookings/edit/${booking._id}`)}
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      className="text-red-600 hover:text-red-900"
-                      onClick={() => handleDeleteBooking(booking._id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button 
+                        variant="ghost"
+                        className="text-blue-600 hover:text-blue-900 mr-3"
+                        onClick={() => navigate(`/bookings/${booking._id}`)}
+                      >
+                        View
+                      </Button>
+                      <Button 
+                        variant="ghost"
+                        className="text-red-600 hover:text-red-900"
+                        onClick={() => handleDeleteBooking(booking._id)}
+                      >
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
       
       {/* Pagination */}
       {!loading && bookings && bookings.length > 0 && totalPages > 1 && (
@@ -360,13 +354,13 @@ const BookingListPage: React.FC = () => {
             Showing <span className="font-medium">{(currentPage - 1) * filters.limit! + 1}</span> to <span className="font-medium">{Math.min(currentPage * filters.limit!, totalBookings)}</span> of <span className="font-medium">{totalBookings}</span> bookings
           </div>
           <div className="flex space-x-2">
-            <button
-              className={`px-3 py-1 rounded ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`}
-              onClick={() => handleFilterChange('page', currentPage - 1)}
+            <Button
+              variant="outline"
               disabled={currentPage === 1}
+              onClick={() => handleFilterChange('page', currentPage - 1)}
             >
               Previous
-            </button>
+            </Button>
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               // Show pages around current page
               let pageNum;
@@ -381,22 +375,22 @@ const BookingListPage: React.FC = () => {
               }
               
               return (
-                <button
+                <Button
                   key={pageNum}
-                  className={`px-3 py-1 rounded ${pageNum === currentPage ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                  variant={pageNum === currentPage ? 'default' : 'outline'}
                   onClick={() => handleFilterChange('page', pageNum)}
                 >
                   {pageNum}
-                </button>
+                </Button>
               );
             })}
-            <button
-              className={`px-3 py-1 rounded ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`}
-              onClick={() => handleFilterChange('page', currentPage + 1)}
+            <Button
+              variant="outline"
               disabled={currentPage === totalPages}
+              onClick={() => handleFilterChange('page', currentPage + 1)}
             >
               Next
-            </button>
+            </Button>
           </div>
         </div>
       )}

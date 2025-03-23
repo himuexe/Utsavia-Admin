@@ -27,7 +27,7 @@ export interface Booking {
   };
   items: BookingItem[];
   totalAmount: number;
-  status: 'pending' | 'confirmed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'cancelled'|'completed';
   paymentIntentId?: string;
   address: Address;
   createdAt: Date;
