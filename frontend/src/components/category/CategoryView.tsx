@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { categoryService, Category } from '../../services/categoryClient';
+import { Button } from '../ui/button';
 
 const CategoryView: React.FC = () => {
   const { id } = useParams();
@@ -94,16 +95,18 @@ const CategoryView: React.FC = () => {
         <div>
           <Link
             to={`/management/categories/${id}/edit`}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded mr-2"
+            className='px-4 py-2 rounded'
           >
-            Edit
+            <Button >
+              Edit
+            </Button>
           </Link>
-          <button
+          <Button
             onClick={handleDelete}
             className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
           >
             Delete
-          </button>
+          </Button>
         </div>
       </div>
       

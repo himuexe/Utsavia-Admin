@@ -10,6 +10,7 @@ import {
 import { categoryService, Category } from '../../services/categoryClient';
 import Spinner from '../common/Spinner';
 import { FaPlus, FaTimes, FaUpload, FaImage } from 'react-icons/fa';
+import { Button } from '../ui/button';
 
 const ItemForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -339,13 +340,13 @@ const ItemForm: React.FC = () => {
             <h2 className="text-lg font-semibold">
               Price Information <span className="text-red-500">*</span>
             </h2>
-            <button
+            <Button
               type="button"
               onClick={addPriceEntry}
-              className="bg-green-500 hover:bg-green-700 text-white py-1 px-3 rounded flex items-center text-sm"
+              className=" text-white py-1 px-3 rounded flex items-center text-sm"
             >
               <FaPlus className="mr-1" /> Add Price
-            </button>
+            </Button>
           </div>
           
           {formData.prices.length === 0 ? (
@@ -406,13 +407,13 @@ const ItemForm: React.FC = () => {
           >
             Cancel
           </button>
-          <button
+          <Button
             type="submit"
-            className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded"
+            className=" text-white py-2 px-4 rounded"
             disabled={submitting}
           >
             {submitting ? 'Saving...' : isEditMode ? 'Update Item' : 'Create Item'}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

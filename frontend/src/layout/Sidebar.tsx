@@ -59,7 +59,7 @@ const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
               className={({ isActive }) => `
                 group flex items-center px-3 py-2.5 rounded-lg text-sm font-medium
                 ${isActive 
-                  ? 'bg-indigo-50 text-indigo-600' 
+                  ? 'bg-black text-white' 
                   : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'}
                 transition-all duration-200
               `}

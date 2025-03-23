@@ -5,6 +5,7 @@ import { fetchItemById, deactivateItem, deleteItem } from '../../services/itemCl
 import Spinner from '../common/Spinner';
 import { FaEdit, FaTrash, FaArrowLeft } from 'react-icons/fa';
 import { formatDate } from '../../utils/formatters';
+import { Button } from '../ui/button';
 
 const ItemView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -98,22 +99,26 @@ const ItemView: React.FC = () => {
   return (
     <div className="container mx-auto p-4 max-w-3xl">
       <div className="flex justify-between items-center mb-6">
-        <Link to="/themes/items" className="text-blue-500 hover:underline flex items-center">
-          <FaArrowLeft className="mr-2" /> Back to Items
-        </Link>
+      <Button variant="outline" onClick={() => navigate('/themes/items')}>
+            Back to Bookings
+          </Button>
         <div className="space-x-2">
           <Link
             to={`/themes/items/${id}/edit`}
-            className="bg-yellow-500 hover:bg-yellow-700 text-white py-2 px-4 rounded inline-flex items-center"
+            className=" text-white py-2 px-4 rounded inline-flex items-center"
           >
+            <Button>
             <FaEdit className="mr-2" /> Edit
+            </Button>
           </Link>
           {item.isActive ? (
             <button
               onClick={handleDeactivate}
-              className="bg-orange-500 hover:bg-orange-700 text-white py-2 px-4 rounded inline-flex items-center"
+              className=" text-white py-2 px-4 rounded inline-flex items-center"
             >
+              <Button>
               <FaTrash className="mr-2" /> Deactivate
+              </Button>
             </button>
           ) : (
             <button

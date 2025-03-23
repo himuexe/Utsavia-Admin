@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { categoryService, Category } from "../services/categoryClient";
+import { Button } from "@/components/ui/button";
 
 // Sort options
 type SortOption = {
@@ -111,9 +112,10 @@ const CategoriesPage: React.FC = () => {
         <h1 className="text-2xl font-bold">Categories Management</h1>
         <Link
           to="categories/new"
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
         >
-          Add New Category
+          <Button>
+            Add Category
+          </Button>
         </Link>
       </div>
 
@@ -191,12 +193,11 @@ const CategoriesPage: React.FC = () => {
           </div>
 
           <div className="md:col-span-4">
-            <button
+            <Button
               type="submit"
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
             >
               Apply Filters
-            </button>
+            </Button>
             <button
               type="button"
               onClick={() => {

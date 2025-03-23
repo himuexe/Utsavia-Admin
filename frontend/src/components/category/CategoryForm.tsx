@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { categoryService, Category } from '../../services/categoryClient';
+import { Button } from '../ui/button';
 
 const CategoryForm: React.FC = () => {
   const { id } = useParams();
@@ -274,13 +275,13 @@ const CategoryForm: React.FC = () => {
             </button>
 
             {!isViewMode && (
-              <button
+              <Button
                 type="submit"
                 disabled={loading}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                className=" text-white px-4 py-2 rounded"
               >
                 {loading ? 'Saving...' : isEditMode ? 'Update Category' : 'Create Category'}
-              </button>
+              </Button>
             )}
           </div>
         </form>

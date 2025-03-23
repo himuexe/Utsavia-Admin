@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { vendorClient, VendorData, VendorFilters } from '../services/vendorClient';
+import { Button } from '@/components/ui/button';
 
 const VendorListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -176,12 +177,12 @@ const VendorListPage: React.FC = () => {
           >
             Reset Filters
           </button>
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          <Button
             onClick={fetchVendors}
+            className=" text-white py-2 px-4 rounded"
           >
             Apply Filters
-          </button>
+          </Button>
         </div>
       </div>
       

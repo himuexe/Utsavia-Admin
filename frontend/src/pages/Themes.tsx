@@ -6,6 +6,7 @@ import { vendorClient as vendorService , VendorData} from '../services/vendorCli
 import Spinner from '../components/common/Spinner';
 import { FaEdit, FaTrash, FaEye, FaPlus } from 'react-icons/fa';
 import { formatDate } from '../utils/formatters';
+import { Button } from '@/components/ui/button';
 
 const Items: React.FC = () => {
   const [items, setItems] = useState<Item[]>([]);
@@ -155,9 +156,12 @@ const Items: React.FC = () => {
         <h1 className="text-2xl font-bold">Items Management</h1>
         <Link
           to="/themes/items/new"
-          className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded flex items-center"
+          className=" text-white py-2 px-4 rounded flex items-center"
         >
-          <FaPlus className="mr-2" /> Add New Item
+          <Button>
+          <FaPlus className="mr-2" /> 
+            Add Item
+          </Button>
         </Link>
       </div>
 
@@ -239,12 +243,12 @@ const Items: React.FC = () => {
           >
             Reset
           </button>
-          <button
+          <Button
             onClick={applyFilters}
-            className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded"
+            className=" text-white py-2 px-4 rounded"
           >
             Apply Filters
-          </button>
+          </Button>
         </div>
       </div>
 
