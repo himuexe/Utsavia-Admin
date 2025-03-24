@@ -1,13 +1,18 @@
 export const API_URL = import.meta.env.VITE_API_URL || 'https://utsavia-admin-server.onrender.com/api';
 
+export interface Vendor {
+  _id: string;
+  name: string;
+  companyName?: string;
+}
 export interface BookingItem {
+  itemId: string;
   itemName: string;
   price: number;
   date: Date;
   timeSlot: string;
-  vendorName?: string;
+  vendorId?: string | Vendor; 
 }
-
 export interface Address {
   street: string;
   city: string;
@@ -27,13 +32,12 @@ export interface Booking {
   };
   items: BookingItem[];
   totalAmount: number;
-  status: 'pending' | 'confirmed' | 'cancelled'|'completed';
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   paymentIntentId?: string;
   address: Address;
   createdAt: Date;
   updatedAt: Date;
 }
-
 export interface PaginatedResponse<T> {
   bookings: T[];
   pagination: {

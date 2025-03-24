@@ -3,12 +3,11 @@ import mongoose from 'mongoose';
 import '../models/user'; 
 import { Booking } from '../models/booking';
 import { Item } from '../models/item';
-import { Vendor } from '../models/vendor';
+import { Vendor , IVendor} from '../models/vendor';
 
 // Get all bookings with pagination, filtering and sorting
 export const getAllBookings = async (req: Request, res: Response) => {
   try {
-    // Check if models are properly registered
     if (!mongoose.models.User) {
       return res.status(500).json({
         message: 'Database models not properly initialized',
@@ -20,13 +19,11 @@ export const getAllBookings = async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
-    // Handle sorting
     const sortField = (req.query.sortField as string) || 'createdAt';
     const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
     const sort: { [key: string]: 'asc' | 'desc' | 1 | -1 } = {};
     sort[sortField] = sortOrder === 1 ? 'asc' : 'desc';
 
-    // Handle filtering
     const filter: Record<string, any> = {};
 
     if (req.query.status) {
@@ -55,38 +52,36 @@ export const getAllBookings = async (req: Request, res: Response) => {
         { 'address.city': searchRegex },
         { 'address.street': searchRegex },
         { 'items.itemName': searchRegex },
+        { 'items.vendorName': searchRegex },
       ];
     }
 
-    // Execute query with filtering, sorting, and pagination
     const bookings = await Booking.find(filter)
       .sort(sort)
       .skip(skip)
       .limit(limit)
-      .populate('userId', 'firstName lastName primaryEmail');
+      .populate<{ userId: { firstName: string; lastName: string; primaryEmail: string } }>('userId', 'firstName lastName primaryEmail')
+      .populate<{ 'items.vendorId': IVendor }>('items.vendorId', 'name companyName');
 
-    // Get total count for pagination
     const total = await Booking.countDocuments(filter);
 
-    // For each booking, find vendor names for items
-    const bookingsWithVendors = await Promise.all(
-      bookings.map(async (booking) => {
-        const bookingObj = booking.toObject();
-        
-        // Get vendor names for each item
-        for (let i = 0; i < bookingObj.items.length; i++) {
-          const item = await Item.findOne({ name: bookingObj.items[i].itemName });
-          if (item && item.vendor) {
-            const vendor = await Vendor.findById(item.vendor);
-            bookingObj.items[i].vendorName = vendor ? vendor.name : 'Admin';
-          } else {
-            bookingObj.items[i].vendorName = 'Admin';
-          }
-        }
-        
-        return bookingObj;
-      })
-    );
+    const bookingsWithVendors = bookings.map(booking => {
+      const bookingObj = booking.toObject();
+      
+      bookingObj.items = bookingObj.items.map(item => {
+        const vendor = item.vendorId as IVendor | undefined;
+        return {
+          ...item,
+          vendor: vendor ? { 
+            _id: vendor._id,
+            name: vendor.name,
+            companyName: vendor.companyName 
+          } : null
+        };
+      });
+      
+      return bookingObj;
+    });
 
     res.status(200).json({
       bookings: bookingsWithVendors,
@@ -108,10 +103,9 @@ export const getAllBookings = async (req: Request, res: Response) => {
 // Get booking by ID
 export const getBookingById = async (req: Request, res: Response) => {
   try {
-    const booking = await Booking.findById(req.params.id).populate(
-      'userId',
-      'firstName lastName primaryEmail'
-    );
+    const booking = await Booking.findById(req.params.id)
+      .populate<{ userId: { firstName: string; lastName: string; primaryEmail: string } }>('userId', 'firstName lastName primaryEmail')
+      .populate<{ 'items.vendorId': IVendor }>('items.vendorId', 'name companyName');
 
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
@@ -119,16 +113,17 @@ export const getBookingById = async (req: Request, res: Response) => {
 
     const bookingObj = booking.toObject();
     
-    // Get vendor names for each item
-    for (let i = 0; i < bookingObj.items.length; i++) {
-      const item = await Item.findOne({ name: bookingObj.items[i].itemName });
-      if (item && item.vendor) {
-        const vendor = await Vendor.findById(item.vendor);
-        bookingObj.items[i].vendorName = vendor ? vendor.name : 'Admin';
-      } else {
-        bookingObj.items[i].vendorName = 'Admin+';
-      }
-    }
+    bookingObj.items = bookingObj.items.map(item => {
+      const vendor = item.vendorId as IVendor | undefined;
+      return {
+        ...item,
+        vendor: vendor ? { 
+          _id: vendor._id,
+          name: vendor.name,
+          companyName: vendor.companyName 
+        } : null
+      };
+    });
 
     res.status(200).json(bookingObj);
   } catch (error) {
@@ -142,11 +137,10 @@ export const getBookingById = async (req: Request, res: Response) => {
 // Update booking
 export const updateBooking = async (req: Request, res: Response) => {
   try {
-    const {
-      status
-    } = req.body;
+    const { status } = req.body;
     
-    const booking = await Booking.findById(req.params.id);
+    const booking = await Booking.findById(req.params.id)
+      .populate<{ 'items.vendorId': IVendor }>('items.vendorId', 'name companyName');
     
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
@@ -158,16 +152,17 @@ export const updateBooking = async (req: Request, res: Response) => {
     
     const updatedBooking = booking.toObject();
     
-    // Get vendor names for each item
-    for (let i = 0; i < updatedBooking.items.length; i++) {
-      const item = await Item.findOne({ name: updatedBooking.items[i].itemName });
-      if (item && item.vendor) {
-        const vendor = await Vendor.findById(item.vendor);
-        updatedBooking.items[i].vendorName = vendor ? vendor.name : 'Admin';
-      } else {
-        updatedBooking.items[i].vendorName = 'Admin';
-      }
-    }
+    updatedBooking.items = updatedBooking.items.map(item => {
+      const vendor = item.vendorId as IVendor | undefined;
+      return {
+        ...item,
+        vendor: vendor ? { 
+          _id: vendor._id,
+          name: vendor.name,
+          companyName: vendor.companyName 
+        } : null
+      };
+    });
     
     res.status(200).json(updatedBooking);
   } catch (error) {
@@ -224,7 +219,7 @@ export const getBookingStats = async (req: Request, res: Response) => {
     const revenueStats = await Booking.aggregate([
       { 
         $match: { 
-          status: { $in: ["confirmed",] },
+          status: { $in: ["confirmed","completed"] },
           createdAt: { $gte: startDate, $lte: endDate }
         } 
       },

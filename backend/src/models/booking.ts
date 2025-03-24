@@ -1,12 +1,19 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 
 // Booking Model
+interface IVendor {
+  _id: Types.ObjectId;
+  name: string;
+  companyName?: string;
+}
+
 interface IBookingItem {
+  itemId: Types.ObjectId;
   itemName: string;
   price: number;
   date: Date;
   timeSlot: string;
-  vendorName?: string;
+  vendorId?: Types.ObjectId | IVendor; 
 }
 
 interface IAddress {
@@ -22,7 +29,7 @@ export interface IBooking extends Document {
   userId: Types.ObjectId;
   items: IBookingItem[];
   totalAmount: number;
-  status: 'pending' | 'confirmed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   paymentIntentId?: string;
   address: IAddress;
   createdAt: Date;
@@ -38,16 +45,18 @@ const bookingSchema: Schema = new Schema(
     },
     items: [
       {
+        itemId: { type: Schema.Types.ObjectId, ref: 'Item' },
         itemName: { type: String, required: true },
         price: { type: Number, required: true },
         date: { type: Date, required: true },
         timeSlot: { type: String, required: true },
+        vendorId: { type: Schema.Types.ObjectId, ref: 'vendors' },
       },
     ],
     totalAmount: { type: Number, required: true },
     status: {
       type: String,
-      enum: ['pending', 'confirmed', 'cancelled','completed'],
+      enum: ['pending', 'confirmed', 'cancelled', 'completed'],
       default: 'pending',
     },
     paymentIntentId: { type: String },

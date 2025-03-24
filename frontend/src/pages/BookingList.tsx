@@ -1,12 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { bookingApi, Booking, BookingFilters } from '../services/bookingClient';
-import { format } from 'date-fns';
-import { Input } from '@/components/ui/input'; // shadcn Input component
-import { Button } from '@/components/ui/button'; // shadcn Button component
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // shadcn Card component
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'; // shadcn Table component
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // shadcn Select component
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  bookingApi,
+  Booking,
+  BookingFilters,
+  Vendor,
+} from "../services/bookingClient";
+import { format } from "date-fns";
+import { Input } from "@/components/ui/input"; // shadcn Input component
+import { Button } from "@/components/ui/button"; // shadcn Button component
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // shadcn Card component
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"; // shadcn Table component
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"; // shadcn Select component
 
 const BookingListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,12 +34,12 @@ const BookingListPage: React.FC = () => {
   const [totalBookings, setTotalBookings] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const statusOptions = ['all', 'pending', 'confirmed', 'cancelled'];
+  const statusOptions = ["all", "pending", "confirmed", "cancelled"];
   const [filters, setFilters] = useState<BookingFilters>({
     page: 1,
     limit: 10,
-    sortField: 'createdAt',
-    sortOrder: 'desc'
+    sortField: "createdAt",
+    sortOrder: "desc",
   });
 
   // Fetch bookings
@@ -38,10 +56,10 @@ const BookingListPage: React.FC = () => {
         setError(null);
       } else {
         setBookings([]);
-        setError('No data received from server');
+        setError("No data received from server");
       }
     } catch (err) {
-      setError('Failed to fetch bookings. Please try again.');
+      setError("Failed to fetch bookings. Please try again.");
       console.error(err);
       setBookings([]);
     } finally {
@@ -51,20 +69,21 @@ const BookingListPage: React.FC = () => {
 
   // Handle filter changes
   const handleFilterChange = (name: string, value: any) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       [name]: value,
-      page: name === 'page' ? value : 1
+      page: name === "page" ? value : 1,
     }));
   };
 
   // Handle sort change
   const handleSortChange = (field: string) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       sortField: field,
-      sortOrder: prev.sortField === field && prev.sortOrder === 'asc' ? 'desc' : 'asc',
-      page: 1
+      sortOrder:
+        prev.sortField === field && prev.sortOrder === "asc" ? "desc" : "asc",
+      page: 1,
     }));
   };
 
@@ -73,19 +92,19 @@ const BookingListPage: React.FC = () => {
     setFilters({
       page: 1,
       limit: 10,
-      sortField: 'createdAt',
-      sortOrder: 'desc'
+      sortField: "createdAt",
+      sortOrder: "desc",
     });
   };
 
   // Delete booking handler
   const handleDeleteBooking = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this booking?')) {
+    if (window.confirm("Are you sure you want to delete this booking?")) {
       try {
         await bookingApi.deleteBooking(id);
         fetchBookings(); // Refresh bookings list
       } catch (err) {
-        setError('Failed to delete booking. Please try again.');
+        setError("Failed to delete booking. Please try again.");
         console.error(err);
       }
     }
@@ -98,21 +117,23 @@ const BookingListPage: React.FC = () => {
 
   // Format date for display
   const formatDate = (date: Date) => {
-    return format(new Date(date), 'MMM dd, yyyy HH:mm');
+    return format(new Date(date), "MMM dd, yyyy HH:mm");
   };
 
   // Render status badge
   const renderStatusBadge = (status: string) => {
     const statusClasses: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      confirmed: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800'
+      pending: "bg-yellow-100 text-yellow-800",
+      confirmed: "bg-green-100 text-green-800",
+      cancelled: "bg-red-100 text-red-800",
     };
-    
-    const statusClass = statusClasses[status] || 'bg-gray-100 text-gray-800';
-    
+
+    const statusClass = statusClasses[status] || "bg-gray-100 text-gray-800";
+
     return (
-      <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusClass}`}>
+      <span
+        className={`px-3 py-1 rounded-full text-xs font-medium ${statusClass}`}
+      >
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     );
@@ -123,7 +144,7 @@ const BookingListPage: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Bookings</h1>
       </div>
-      
+
       {/* Filters */}
       <Card className="mb-6">
         <CardHeader>
@@ -133,16 +154,23 @@ const BookingListPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Status filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Status
+              </label>
               <Select
-                value={filters.status || 'all'}
-                onValueChange={(value) => handleFilterChange('status', value === 'all' ? undefined : value)}
+                value={filters.status || "all"}
+                onValueChange={(value) =>
+                  handleFilterChange(
+                    "status",
+                    value === "all" ? undefined : value
+                  )
+                }
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  {statusOptions.map(status => (
+                  {statusOptions.map((status) => (
                     <SelectItem key={status} value={status}>
                       {status.charAt(0).toUpperCase() + status.slice(1)}
                     </SelectItem>
@@ -150,123 +178,143 @@ const BookingListPage: React.FC = () => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             {/* Date range filters */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date From
+              </label>
               <Input
                 type="date"
-                value={filters.dateFrom || ''}
-                onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+                value={filters.dateFrom || ""}
+                onChange={(e) => handleFilterChange("dateFrom", e.target.value)}
               />
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date To
+              </label>
               <Input
                 type="date"
-                value={filters.dateTo || ''}
-                onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+                value={filters.dateTo || ""}
+                onChange={(e) => handleFilterChange("dateTo", e.target.value)}
               />
             </div>
-            
+
             {/* Amount range filters */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Min Amount</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Min Amount
+              </label>
               <Input
                 type="number"
-                value={filters.minAmount || ''}
-                onChange={(e) => handleFilterChange('minAmount', e.target.value ? Number(e.target.value) : undefined)}
+                value={filters.minAmount || ""}
+                onChange={(e) =>
+                  handleFilterChange(
+                    "minAmount",
+                    e.target.value ? Number(e.target.value) : undefined
+                  )
+                }
               />
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Max Amount</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Max Amount
+              </label>
               <Input
                 type="number"
-                value={filters.maxAmount || ''}
-                onChange={(e) => handleFilterChange('maxAmount', e.target.value ? Number(e.target.value) : undefined)}
+                value={filters.maxAmount || ""}
+                onChange={(e) =>
+                  handleFilterChange(
+                    "maxAmount",
+                    e.target.value ? Number(e.target.value) : undefined
+                  )
+                }
               />
             </div>
-            
+
             {/* Search */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Search
+              </label>
               <Input
                 type="text"
-                value={filters.search || ''}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
+                value={filters.search || ""}
+                onChange={(e) => handleFilterChange("search", e.target.value)}
                 placeholder="Search city, street, item..."
               />
             </div>
           </div>
-          
+
           <div className="mt-4 flex justify-end">
-            <Button
-              variant="outline"
-              className="mr-2"
-              onClick={resetFilters}
-            >
+            <Button variant="outline" className="mr-2" onClick={resetFilters}>
               Reset Filters
             </Button>
-            <Button
-              onClick={fetchBookings}
-            >
-              Apply Filters
-            </Button>
+            <Button onClick={fetchBookings}>Apply Filters</Button>
           </div>
         </CardContent>
       </Card>
-      
+
       {/* Error message */}
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
         </div>
       )}
-      
+
       {/* Bookings table */}
       <Card>
         <CardContent className="p-0">
           {loading ? (
             <div className="p-8 text-center">Loading bookings...</div>
           ) : !bookings || bookings.length === 0 ? (
-            <div className="p-8 text-center">No bookings found. Try adjusting your filters.</div>
+            <div className="p-8 text-center">
+              No bookings found. Try adjusting your filters.
+            </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead 
+                  <TableHead
                     className="cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSortChange('createdAt')}
+                    onClick={() => handleSortChange("createdAt")}
                   >
                     <div className="flex items-center">
                       Date
-                      {filters.sortField === 'createdAt' && (
-                        <span className="ml-1">{filters.sortOrder === 'asc' ? '↑' : '↓'}</span>
+                      {filters.sortField === "createdAt" && (
+                        <span className="ml-1">
+                          {filters.sortOrder === "asc" ? "↑" : "↓"}
+                        </span>
                       )}
                     </div>
                   </TableHead>
                   <TableHead>Customer</TableHead>
-                  <TableHead 
+                  <TableHead
                     className="cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSortChange('totalAmount')}
+                    onClick={() => handleSortChange("totalAmount")}
                   >
                     <div className="flex items-center">
                       Amount
-                      {filters.sortField === 'totalAmount' && (
-                        <span className="ml-1">{filters.sortOrder === 'asc' ? '↑' : '↓'}</span>
+                      {filters.sortField === "totalAmount" && (
+                        <span className="ml-1">
+                          {filters.sortOrder === "asc" ? "↑" : "↓"}
+                        </span>
                       )}
                     </div>
                   </TableHead>
-                  <TableHead 
+                  <TableHead
                     className="cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSortChange('status')}
+                    onClick={() => handleSortChange("status")}
                   >
                     <div className="flex items-center">
                       Status
-                      {filters.sortField === 'status' && (
-                        <span className="ml-1">{filters.sortOrder === 'asc' ? '↑' : '↓'}</span>
+                      {filters.sortField === "status" && (
+                        <span className="ml-1">
+                          {filters.sortOrder === "asc" ? "↑" : "↓"}
+                        </span>
                       )}
                     </div>
                   </TableHead>
@@ -283,24 +331,28 @@ const BookingListPage: React.FC = () => {
                       {formatDate(booking.createdAt)}
                     </TableCell>
                     <TableCell>
-                      <div className="font-medium">{booking.userId?.firstName || 'Unknown'}</div>
-                      <div className="text-sm text-gray-500">{booking.userId?.primaryEmail || 'No email'}</div>
+                      <div className="font-medium">
+                        {booking.userId?.firstName || "Unknown"}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {booking.userId?.primaryEmail || "No email"}
+                      </div>
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
                       ₹{booking.totalAmount.toFixed(2)}
                     </TableCell>
+                    <TableCell>{renderStatusBadge(booking.status)}</TableCell>
                     <TableCell>
-                      {renderStatusBadge(booking.status)}
-                    </TableCell>
-                    <TableCell>
-                      {booking.items && booking.items.map((item, index) => (
-                        <div key={index} className="mb-1">
-                          {item.itemName} - ₹{item.price.toFixed(2)}
-                          <div className="text-xs text-gray-500">
-                            {format(new Date(item.date), 'MMM dd, yyyy')} | {item.timeSlot}
+                      {booking.items &&
+                        booking.items.map((item, index) => (
+                          <div key={index} className="mb-1">
+                            {item.itemName} - ₹{item.price.toFixed(2)}
+                            <div className="text-xs text-gray-500">
+                              {format(new Date(item.date), "MMM dd, yyyy")} |{" "}
+                              {item.timeSlot}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
                     </TableCell>
                     <TableCell>
                       {booking.address ? (
@@ -309,29 +361,46 @@ const BookingListPage: React.FC = () => {
                             {booking.address.street}, {booking.address.city}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {booking.address.state}, {booking.address.zipCode}, {booking.address.country}
+                            {booking.address.state}, {booking.address.zipCode},{" "}
+                            {booking.address.country}
                           </div>
                         </>
                       ) : (
-                        <div className="text-sm text-gray-500">No address provided</div>
+                        <div className="text-sm text-gray-500">
+                          No address provided
+                        </div>
                       )}
                     </TableCell>
                     <TableCell>
-                      {booking.items && booking.items.map((item, index) => (
-                        <div key={index} className="mb-1">
-                          {item.vendorName} 
-                        </div>
-                      ))}
+                      {booking.items &&
+                        booking.items.map((item, index) => {
+                          const vendor = item.vendorId as Vendor | undefined;
+                          return (
+                            <div key={index} className="mb-1">
+                              {vendor ? (
+                                <>
+                                  <div className="font-medium">
+                                    {vendor.companyName}
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="text-sm text-gray-500">
+                                  Admin
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button 
+                      <Button
                         variant="ghost"
                         className="text-blue-600 hover:text-blue-900 mr-3"
                         onClick={() => navigate(`/bookings/${booking._id}`)}
                       >
                         View
                       </Button>
-                      <Button 
+                      <Button
                         variant="ghost"
                         className="text-red-600 hover:text-red-900"
                         onClick={() => handleDeleteBooking(booking._id)}
@@ -346,18 +415,26 @@ const BookingListPage: React.FC = () => {
           )}
         </CardContent>
       </Card>
-      
+
       {/* Pagination */}
       {!loading && bookings && bookings.length > 0 && totalPages > 1 && (
         <div className="mt-6 flex justify-between items-center">
           <div className="text-sm text-gray-700">
-            Showing <span className="font-medium">{(currentPage - 1) * filters.limit! + 1}</span> to <span className="font-medium">{Math.min(currentPage * filters.limit!, totalBookings)}</span> of <span className="font-medium">{totalBookings}</span> bookings
+            Showing{" "}
+            <span className="font-medium">
+              {(currentPage - 1) * filters.limit! + 1}
+            </span>{" "}
+            to{" "}
+            <span className="font-medium">
+              {Math.min(currentPage * filters.limit!, totalBookings)}
+            </span>{" "}
+            of <span className="font-medium">{totalBookings}</span> bookings
           </div>
           <div className="flex space-x-2">
             <Button
               variant="outline"
               disabled={currentPage === 1}
-              onClick={() => handleFilterChange('page', currentPage - 1)}
+              onClick={() => handleFilterChange("page", currentPage - 1)}
             >
               Previous
             </Button>
@@ -373,12 +450,12 @@ const BookingListPage: React.FC = () => {
               } else {
                 pageNum = currentPage - 2 + i;
               }
-              
+
               return (
                 <Button
                   key={pageNum}
-                  variant={pageNum === currentPage ? 'default' : 'outline'}
-                  onClick={() => handleFilterChange('page', pageNum)}
+                  variant={pageNum === currentPage ? "default" : "outline"}
+                  onClick={() => handleFilterChange("page", pageNum)}
                 >
                   {pageNum}
                 </Button>
@@ -387,7 +464,7 @@ const BookingListPage: React.FC = () => {
             <Button
               variant="outline"
               disabled={currentPage === totalPages}
-              onClick={() => handleFilterChange('page', currentPage + 1)}
+              onClick={() => handleFilterChange("page", currentPage + 1)}
             >
               Next
             </Button>
