@@ -51,7 +51,7 @@ export const login = async (
     // Send token in cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENVV === "production",
       maxAge: 24 * 60 * 60 * 1000, // 1 day
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     });
@@ -112,9 +112,9 @@ export const getCurrentAdmin = async (
 export const logout = (req: Request, res: Response) => {
   res.cookie("token", "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.NODE_ENVV === "production",
     maxAge: 0, // Expire immediately
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    sameSite: process.env.NODE_ENVV === "production" ? "none" : "lax",
     path: "/", // Make sure path matches the cookie path
   });
 
