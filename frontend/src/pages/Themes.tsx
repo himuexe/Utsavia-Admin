@@ -237,12 +237,13 @@ const Items: React.FC = () => {
         </div>
 
         <div className="flex justify-end mt-4 gap-2">
-          <button
+          <Button
+          variant={'outline'}
             onClick={resetFilters}
-            className="bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded"
+            className="mr-2"
           >
-            Reset
-          </button>
+            Reset filters
+          </Button>
           <Button
             onClick={applyFilters}
             className=" text-white py-2 px-4 rounded"

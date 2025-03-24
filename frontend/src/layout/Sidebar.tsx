@@ -8,6 +8,8 @@ import {
   FaUser, 
 } from 'react-icons/fa';
 import { Button } from '../components/ui/button';
+import { useAuth } from '../context/authContext';
+import {  UserCog } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -15,13 +17,20 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
-  const navigation = [
+  const {user} = useAuth();
+  const common = [
     { name: 'Dashboard', href: '/', icon: FaHome, description: 'View analytics overview' },
     { name: 'Bookings', href: '/bookings', icon: FaCalendarAlt, description: 'Manage reservations' },
     { name: 'Categories', href: '/management', icon: FaCog, description: 'System settings' },
     { name: 'Themes', href: '/themes', icon: FaPalette, description: 'Customize appearance' },
     { name: 'Vendors', href: '/vendors', icon: FaUser, description: 'Manage vendors' },
   ];
+  const superadminMenuItems = [
+    { name: 'Admins ', href: '/admins', icon:UserCog, description: 'Manage admins'  },
+  ];
+  const navigation = user?.role === 'superadmin' 
+  ? [...common, ...superadminMenuItems]
+  : common;
 
   return (
     <aside 

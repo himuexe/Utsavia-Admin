@@ -9,11 +9,16 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   clearError: () => void;
+  checkIsAdmin: (requiredRole?: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +29,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const loadUser = async () => {
       try {
         setLoading(true);
-        
         const response = await authApi.getCurrentUser();
         if (response.success && response.admin) {
           setUser(response.admin);
@@ -82,6 +86,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setError(null);
   };
 
+  // Helper function to check if user has required role
+  const checkIsAdmin = (requiredRole?: string) => {
+    if (!user) return false;
+    if (!requiredRole) return true;
+    return user.role === requiredRole;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -91,6 +102,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         login,
         logout,
         clearError,
+        checkIsAdmin,
       }}
     >
       {children}

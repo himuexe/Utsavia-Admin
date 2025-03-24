@@ -13,7 +13,10 @@ import Themes from '../pages/Themes';
 import LoginPage from '../pages/Login';
 import VendorListPage from '../pages/Vendor';
 import VendorFormPage from '../components/vendor/VendorForm';
+import AdminManagementPage from '../pages/AdminManagement';
+import UnauthorizedPage from '../pages/Unauthorized';
 import ProtectedRoute from './ProtectedRoute';
+import RoleBasedRoute from './RoleBasedRoute';
 import { AuthProvider } from '../context/authContext';
 
 const router = createBrowserRouter([
@@ -40,11 +43,11 @@ const router = createBrowserRouter([
         path: '/bookings/:id',
         element: <BookingDetailsPage />,
       },
+      // Category routes - available to all admins
       {
         path: 'management',
         element: <Categories />,
       },
-      // Category routes
       {
         path: 'management/categories/new',
         element: <CategoryFormPage />,
@@ -86,6 +89,20 @@ const router = createBrowserRouter([
       {
         path: 'vendors/:id',
         element: <VendorFormPage/>,
+      },
+      // Admin management - only for superadmin
+      {
+        path: 'admins',
+        element: (
+          <RoleBasedRoute allowedRoles={['superadmin']}>
+            <AdminManagementPage />
+          </RoleBasedRoute>
+        ),
+      },
+      // Unauthorized page
+      {
+        path: 'unauthorized',
+        element: <UnauthorizedPage />,
       },
     ],
   },

@@ -1,9 +1,9 @@
 import {  useRef} from 'react';
-import { FaBars } from 'react-icons/fa';
+import { FaBars, FaUser } from 'react-icons/fa';
 import { useAuth } from '../context/authContext';
 import authApi from '../services/authClient';
 import { Button } from '../components/ui/button'; 
-import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar'; 
+import { Avatar } from '../components/ui/avatar'; 
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,9 +54,8 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
                     variant="ghost"
                     className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={"https://avatars.githubusercontent.com/u/66200562?v=4"} alt={user?.name || "Admin"} />
-                      <AvatarFallback>{user?.name?.charAt(0) || "A"}</AvatarFallback>
+                    <Avatar className="h-8 w-8  items-center">
+                      <FaUser className="w-4 h-4 " />
                     </Avatar>
                     <span className="text-sm font-medium hidden sm:block">{user?.name || "Admin"}</span>
                   </Button>

@@ -10,6 +10,7 @@ import itemRoutes from "./routes/itemRoute";
 import categoryRoutes from "./routes/categoryRoute";
 import authRoutes from "./routes/authRoutes";
 import vendorRoutes from "./routes/vendorRoutes";
+import adminRoutes from "./routes/adminRoutes";
 import { protect } from "./middleware/auth";
 
 dotenv.config();
@@ -81,6 +82,7 @@ app.use("/api/booking", protect as any, bookingRoutes);
 app.use("/api/items", protect as any, itemRoutes);
 app.use("/api/category", protect as any, categoryRoutes);
 app.use("/api/vendor", protect as any, vendorRoutes);
+app.use('/api/admins', adminRoutes);
 
 // Start server
 const server = app.listen(PORT, () => {

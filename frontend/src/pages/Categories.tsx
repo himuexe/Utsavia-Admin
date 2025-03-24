@@ -192,24 +192,25 @@ const CategoriesPage: React.FC = () => {
             </select>
           </div>
 
-          <div className="md:col-span-4">
+          <div className="mt-4 flex">
             <Button
               type="submit"
             >
               Apply Filters
             </Button>
-            <button
+            <Button
               type="button"
+              variant={"outline"}
               onClick={() => {
                 setSearch("");
                 setParentFilter("");
                 setActiveFilter("");
                 setSortOption(sortOptions[0]);
               }}
-              className="ml-2 bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded"
+              className="ml-2"
             >
-              Reset
-            </button>
+              Reset filters
+            </Button>
           </div>
         </form>
       </div>
@@ -277,12 +278,7 @@ const CategoriesPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {category.parentId ? (
-                        <Link
-                          to={`/management/categories/${category.parentId}`}
-                          className="text-blue-500 hover:underline"
-                        >
-                          {(category as any).parentId?.name || "View Parent"}
-                        </Link>
+                          (category as any).parentId?.name || "View Parent"
                       ) : (
                         "Root Category"
                       )}
