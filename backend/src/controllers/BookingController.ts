@@ -143,11 +143,7 @@ export const getBookingById = async (req: Request, res: Response) => {
 export const updateBooking = async (req: Request, res: Response) => {
   try {
     const {
-      items,
-      totalAmount,
-      status,
-      paymentIntentId,
-      address
+      status
     } = req.body;
     
     const booking = await Booking.findById(req.params.id);
@@ -156,12 +152,7 @@ export const updateBooking = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Booking not found' });
     }
     
-    // Update fields if provided
-    if (items) booking.items = items;
-    if (totalAmount) booking.totalAmount = totalAmount;
     if (status) booking.status = status;
-    if (paymentIntentId) booking.paymentIntentId = paymentIntentId;
-    if (address) booking.address = address;
     
     await booking.save();
     
