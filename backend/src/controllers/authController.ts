@@ -110,9 +110,12 @@ export const getCurrentAdmin = async (
 
 // Logout controller
 export const logout = (req: Request, res: Response) => {
-  res.cookie("token", "none", {
-    expires: new Date(Date.now() + 10 * 1000), // Expires in 10 seconds
+  res.cookie("token", "", {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 0, // Expire immediately
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    path: "/", // Make sure path matches the cookie path
   });
 
   res.status(200).json({
@@ -120,4 +123,3 @@ export const logout = (req: Request, res: Response) => {
     message: "Logged out successfully",
   });
 };
-
