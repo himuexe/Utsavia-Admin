@@ -1,23 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { vendorClient, VendorData, VendorFilters } from '../services/vendorClient';
-import { Button } from '@/components/ui/button';
-
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  vendorClient,
+  VendorData,
+  VendorFilters,
+} from "../services/vendorClient";
+import { Button } from "@/components/ui/button";
+import * as XLSX from "xlsx";
+import { Download } from "lucide-react";
 const VendorListPage: React.FC = () => {
   const navigate = useNavigate();
   const [vendors, setVendors] = useState<VendorData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const cityOptions = ['All','Delhi NCR', 'Mumbai', 'Bangalore', 'Chennai', 'Jaipur', 'Hyderabad', 'Pune', 'Across India','Indore','Lucknow','Chandigarh','Ahmedabad'];
-  
+  const cityOptions = [
+    "All",
+    "Delhi NCR",
+    "Mumbai",
+    "Bangalore",
+    "Chennai",
+    "Jaipur",
+    "Hyderabad",
+    "Pune",
+    "Across India",
+    "Indore",
+    "Lucknow",
+    "Chandigarh",
+    "Ahmedabad",
+  ];
+
   const [filters, setFilters] = useState<VendorFilters>({
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
+    sortBy: "createdAt",
+    sortOrder: "desc",
   });
 
   // Fetch vendors
   const fetchVendors = async () => {
-    try {   
+    try {
       setLoading(true);
       const response = await vendorClient.getAllVendors(filters);
 
@@ -26,10 +45,10 @@ const VendorListPage: React.FC = () => {
         setError(null);
       } else {
         setVendors([]);
-        setError('No data received from server');
+        setError("No data received from server");
       }
     } catch (err) {
-      setError('Failed to fetch vendors. Please try again.');
+      setError("Failed to fetch vendors. Please try again.");
       console.error(err);
       setVendors([]);
     } finally {
@@ -39,26 +58,27 @@ const VendorListPage: React.FC = () => {
 
   // Handle filter changes
   const handleFilterChange = (name: string, value: any) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [name]: value === 'All' ? undefined : value
+      [name]: value === "All" ? undefined : value,
     }));
   };
 
   // Handle sort change
   const handleSortChange = (field: string) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       sortBy: field,
-      sortOrder: prev.sortBy === field && prev.sortOrder === 'asc' ? 'desc' : 'asc',
+      sortOrder:
+        prev.sortBy === field && prev.sortOrder === "asc" ? "desc" : "asc",
     }));
   };
 
   // Reset filters
   const resetFilters = () => {
     setFilters({
-      sortBy: 'createdAt',
-      sortOrder: 'desc',
+      sortBy: "createdAt",
+      sortOrder: "desc",
     });
   };
 
@@ -68,20 +88,23 @@ const VendorListPage: React.FC = () => {
       await vendorClient.toggleVendorStatus(id, !currentStatus);
       fetchVendors(); // Refresh vendors list
     } catch (err) {
-      setError('Failed to update vendor status. Please try again.');
+      setError("Failed to update vendor status. Please try again.");
       console.error(err);
     }
   };
 
-
   // Delete vendor handler
   const handleDeleteVendor = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this vendor? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this vendor? This action cannot be undone."
+      )
+    ) {
       try {
         await vendorClient.deleteVendor(id);
         fetchVendors(); // Refresh vendors list
       } catch (err) {
-        setError('Failed to delete vendor. Please try again.');
+        setError("Failed to delete vendor. Please try again.");
         console.error(err);
       }
     }
@@ -89,11 +112,11 @@ const VendorListPage: React.FC = () => {
 
   // Format date for display
   const formatDate = (dateString: Date | undefined) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -104,14 +127,47 @@ const VendorListPage: React.FC = () => {
 
   // Render status badge
   const renderStatusBadge = (isActive: boolean | undefined) => {
-    const statusClass = isActive 
-      ? 'bg-green-100 text-green-800' 
-      : 'bg-red-100 text-red-800';
-    
+    const statusClass = isActive
+      ? "bg-green-100 text-green-800"
+      : "bg-red-100 text-red-800";
+
     return (
-      <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusClass}`}>
-        {isActive ? 'Active' : 'Inactive'}
+      <span
+        className={`px-3 py-1 rounded-full text-xs font-medium ${statusClass}`}
+      >
+        {isActive ? "Active" : "Inactive"}
       </span>
+    );
+  };
+  const exportToExcel = () => {
+    // Prepare data for export
+    const exportData = vendors.map((vendor) => ({
+      'ID': vendor._id,
+      'Email': vendor.email,
+      'Name': vendor.name,
+      'Company Name': vendor.companyName,
+      'Phone': vendor.phone,
+      'City': vendor.city,
+      'Payment Mode': vendor.paymentMode,
+      'Upi Id': vendor.upiId,
+      'Account Number': vendor.bankDetails?.accountNumber,
+      'IFSC Code': vendor.bankDetails?.ifscCode,
+      'Status': vendor.isActive ? "Active" : "Inactive",
+      'Address': vendor.address,
+      'Created At': vendor.createdAt,
+    }));
+
+    // Create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    // Create workbook and add worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Vendors");
+
+    // Generate and download Excel file
+    XLSX.writeFile(
+      workbook,
+      `vendors_export_${new Date().toISOString().split("T")[0]}.xlsx`
     );
   };
 
@@ -119,21 +175,39 @@ const VendorListPage: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Vendor Management</h1>
+        <Button
+          variant="outline"
+          onClick={exportToExcel}
+          disabled={vendors.length === 0}
+        >
+          <Download className="mr-2 h-4 w-4" /> Export to Excel
+        </Button>
       </div>
-      
+
       {/* Filters */}
       <div className="bg-white p-4 rounded shadow mb-6">
         <h2 className="text-lg font-semibold mb-3">Filters</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Status filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Status
+            </label>
             <select
               className="w-full border border-gray-300 rounded px-3 py-2"
-              value={filters.isActive === undefined ? 'all' : (filters.isActive ? 'active' : 'inactive')}
+              value={
+                filters.isActive === undefined
+                  ? "all"
+                  : filters.isActive
+                    ? "active"
+                    : "inactive"
+              }
               onChange={(e) => {
                 const value = e.target.value;
-                handleFilterChange('isActive', value === 'all' ? undefined : value === 'active')
+                handleFilterChange(
+                  "isActive",
+                  value === "all" ? undefined : value === "active"
+                );
               }}
             >
               <option value="all">All</option>
@@ -141,35 +215,40 @@ const VendorListPage: React.FC = () => {
               <option value="inactive">Inactive</option>
             </select>
           </div>
-          
-          
+
           {/* City filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              City
+            </label>
             <select
               className="w-full border border-gray-300 rounded px-3 py-2"
-              value={filters.city || 'All'}
-              onChange={(e) => handleFilterChange('city', e.target.value)}
+              value={filters.city || "All"}
+              onChange={(e) => handleFilterChange("city", e.target.value)}
             >
-              {cityOptions.map(city => (
-                <option key={city} value={city}>{city}</option>
+              {cityOptions.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
               ))}
             </select>
           </div>
-          
+
           {/* Search */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Search
+            </label>
             <input
               type="text"
               className="w-full border border-gray-300 rounded px-3 py-2"
-              value={filters.search || ''}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
+              value={filters.search || ""}
+              onChange={(e) => handleFilterChange("search", e.target.value)}
               placeholder="Search name, email, company..."
             />
           </div>
         </div>
-        
+
         <div className="mt-4 flex justify-end">
           <button
             className="bg-gray-200 text-gray-700 px-4 py-2 rounded mr-2 hover:bg-gray-300"
@@ -185,68 +264,78 @@ const VendorListPage: React.FC = () => {
           </Button>
         </div>
       </div>
-      
+
       {/* Error message */}
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
         </div>
       )}
-      
+
       {/* Vendors table */}
       <div className="bg-white rounded shadow overflow-x-auto">
         {loading ? (
           <div className="p-8 text-center">Loading vendors...</div>
         ) : !vendors || vendors.length === 0 ? (
-          <div className="p-8 text-center">No vendors found. Try adjusting your filters.</div>
+          <div className="p-8 text-center">
+            No vendors found. Try adjusting your filters.
+          </div>
         ) : (
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th 
+                <th
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSortChange('createdAt')}
+                  onClick={() => handleSortChange("createdAt")}
                 >
                   <div className="flex items-center">
                     Date Added
-                    {filters.sortBy === 'createdAt' && (
-                      <span className="ml-1">{filters.sortOrder === 'asc' ? '↑' : '↓'}</span>
+                    {filters.sortBy === "createdAt" && (
+                      <span className="ml-1">
+                        {filters.sortOrder === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </div>
                 </th>
-                <th 
+                <th
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSortChange('name')}
+                  onClick={() => handleSortChange("name")}
                 >
                   <div className="flex items-center">
                     Name
-                    {filters.sortBy === 'name' && (
-                      <span className="ml-1">{filters.sortOrder === 'asc' ? '↑' : '↓'}</span>
+                    {filters.sortBy === "name" && (
+                      <span className="ml-1">
+                        {filters.sortOrder === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </div>
                 </th>
-                <th 
+                <th
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSortChange('companyName')}
+                  onClick={() => handleSortChange("companyName")}
                 >
                   <div className="flex items-center">
                     Company
-                    {filters.sortBy === 'companyName' && (
-                      <span className="ml-1">{filters.sortOrder === 'asc' ? '↑' : '↓'}</span>
+                    {filters.sortBy === "companyName" && (
+                      <span className="ml-1">
+                        {filters.sortOrder === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </div>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Contact
                 </th>
-                <th 
+                <th
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSortChange('city')}
+                  onClick={() => handleSortChange("city")}
                 >
                   <div className="flex items-center">
                     City
-                    {filters.sortBy === 'city' && (
-                      <span className="ml-1">{filters.sortOrder === 'asc' ? '↑' : '↓'}</span>
+                    {filters.sortBy === "city" && (
+                      <span className="ml-1">
+                        {filters.sortOrder === "asc" ? "↑" : "↓"}
+                      </span>
                     )}
                   </div>
                 </th>
@@ -268,27 +357,33 @@ const VendorListPage: React.FC = () => {
                     {formatDate(vendor.createdAt)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{vendor.name}</div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {vendor.name}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {vendor.companyName || 'N/A'}
+                    {vendor.companyName || "N/A"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">{vendor.email}</div>
-                    <div className="text-sm text-gray-500">{vendor.phone || 'No phone'}</div>
+                    <div className="text-sm text-gray-500">
+                      {vendor.phone || "No phone"}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {vendor.city || 'N/A'}
+                    {vendor.city || "N/A"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div className="capitalize">{vendor.paymentMode}</div>
-                    {vendor.paymentMode === 'upi' ? (
-                      <div className="text-xs text-gray-500">{vendor.upiId || 'No UPI ID'}</div>
+                    {vendor.paymentMode === "upi" ? (
+                      <div className="text-xs text-gray-500">
+                        {vendor.upiId || "No UPI ID"}
+                      </div>
                     ) : (
                       <div className="text-xs text-gray-500">
-                        {vendor.bankDetails?.accountHolderName 
-                          ? `${vendor.bankDetails.accountHolderName.substring(0, 10)}...` 
-                          : 'No bank details'}
+                        {vendor.bankDetails?.accountHolderName
+                          ? `${vendor.bankDetails.accountHolderName.substring(0, 10)}...`
+                          : "No bank details"}
                       </div>
                     )}
                   </td>
@@ -296,19 +391,24 @@ const VendorListPage: React.FC = () => {
                     {renderStatusBadge(vendor.isActive)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button 
+                    <button
                       className="text-blue-600 hover:text-blue-900 mr-3"
                       onClick={() => navigate(`/vendors/${vendor._id}`)}
                     >
                       View
                     </button>
-                    <button 
-                      className={`mr-3 ${vendor.isActive ? 'text-orange-600 hover:text-orange-900' : 'text-green-600 hover:text-green-900'}`}
-                      onClick={() => handleToggleStatus(vendor._id as string, vendor.isActive as boolean)}
+                    <button
+                      className={`mr-3 ${vendor.isActive ? "text-orange-600 hover:text-orange-900" : "text-green-600 hover:text-green-900"}`}
+                      onClick={() =>
+                        handleToggleStatus(
+                          vendor._id as string,
+                          vendor.isActive as boolean
+                        )
+                      }
                     >
-                      {vendor.isActive ? 'Deactivate' : 'Activate'}
+                      {vendor.isActive ? "Deactivate" : "Activate"}
                     </button>
-                    <button 
+                    <button
                       className="text-red-600 hover:text-red-900"
                       onClick={() => handleDeleteVendor(vendor._id as string)}
                     >

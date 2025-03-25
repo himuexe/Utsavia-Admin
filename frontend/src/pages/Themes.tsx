@@ -4,10 +4,11 @@ import { fetchItems, deactivateItem, deleteItem, Item } from '../services/itemCl
 import { categoryService, Category } from '../services/categoryClient';
 import { vendorClient as vendorService , VendorData} from '../services/vendorClient'; 
 import Spinner from '../components/common/Spinner';
-import { FaEdit, FaTrash, FaEye, FaPlus } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaEye} from 'react-icons/fa';
 import { formatDate } from '../utils/formatters';
 import { Button } from '@/components/ui/button';
-
+import * as XLSX from 'xlsx';
+import { Download } from "lucide-react";
 const Items: React.FC = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -149,20 +150,48 @@ const Items: React.FC = () => {
   if (loading) {
     return <Spinner />;
   }
+  const exportToExcel = () => {
+    // Prepare data for export
+    const exportData = items.map((item) => ({
+      'ID': item._id,
+      'Name': item.name,
+      'Category': item.category,
+      'Status': item.isActive ? 'Active' : 'Inactive',
+      'Vendor': item.vendor?.name || 'Admin',
+      'Prices': formatPrices(item.prices),
+      'Created At': new Date(item.createdAt).toLocaleDateString(),
+      'Description': item.description || 'No description'
+    }));
+
+    // Create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    
+    // Create workbook and add worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Items');
+    
+    // Generate and download Excel file
+    XLSX.writeFile(workbook, `items_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
 
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Items Management</h1>
-        <Link
-          to="/themes/items/new"
-          className=" text-white py-2 px-4 rounded flex items-center"
-        >
-          <Button>
-          <FaPlus className="mr-2" /> 
-            Add Item
+        <div className="flex items-center space-x-4">
+          {/* Export to Excel Button */}
+          <Button 
+            variant="outline" 
+            onClick={exportToExcel}
+            disabled={items.length === 0}
+          >
+            <Download className="mr-2 h-4 w-4" /> Export to Excel
           </Button>
-        </Link>
+          
+          <Link to="/themes/items/new">
+            <Button>Add Category</Button>
+          </Link>
+        </div>
       </div>
 
       {error && (

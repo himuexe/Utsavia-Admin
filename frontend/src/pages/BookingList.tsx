@@ -6,10 +6,11 @@ import {
   BookingFilters,
   Vendor,
 } from "../services/bookingClient";
+import * as XLSX from 'xlsx';
 import { format } from "date-fns";
-import { Input } from "@/components/ui/input"; // shadcn Input component
-import { Button } from "@/components/ui/button"; // shadcn Button component
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // shadcn Card component
+import { Input } from "@/components/ui/input"; 
+import { Button } from "@/components/ui/button"; 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; 
 import {
   Table,
   TableBody,
@@ -17,15 +18,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"; // shadcn Table component
+} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"; // shadcn Select component
-
+} from "@/components/ui/select"; 
+import { Download } from "lucide-react";
 const BookingListPage: React.FC = () => {
   const navigate = useNavigate();
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -138,11 +139,50 @@ const BookingListPage: React.FC = () => {
       </span>
     );
   };
+  const exportToExcel = () => {
+    // Prepare data for export
+    const exportData = bookings.map((booking) => ({
+      'Booking ID': booking._id,
+      'Date': formatDate(booking.createdAt),
+      'Customer Name': `${booking.userId?.firstName || 'Unknown'} ${booking.userId?.lastName || ''}`.trim(),
+      'Customer Email': booking.userId?.primaryEmail || 'No email',
+      'Total Amount': booking.totalAmount.toFixed(2),
+      'Status': booking.status,
+      'Items': booking.items?.map(item => 
+        `${item.itemName} (₹${item.price.toFixed(2)}) - ${format(new Date(item.date), "MMM dd, yyyy")} ${item.timeSlot}`
+      ).join(' | '),
+      'Address': booking.address 
+        ? `${booking.address.street}, ${booking.address.city}, ${booking.address.state} ${booking.address.zipCode}, ${booking.address.country}` 
+        : 'No address',
+      'Vendors': booking.items?.map(item => {
+        const vendor = item.vendorId as Vendor | undefined;
+        return vendor ? vendor.companyName : 'Admin';
+      }).join(' | ')
+    }));
+
+    // Create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    
+    // Create workbook and add worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Bookings');
+    
+    // Generate and download Excel file
+    XLSX.writeFile(workbook, `bookings_export_${format(new Date(), 'yyyyMMdd_HHmmss')}.xlsx`);
+  };
+
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Bookings</h1>
+        <Button 
+          variant="outline" 
+          onClick={exportToExcel}
+          disabled={bookings.length === 0}
+        >
+          <Download className="mr-2 h-4 w-4" /> Export to Excel
+        </Button>
       </div>
 
       {/* Filters */}

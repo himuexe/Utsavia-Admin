@@ -3,7 +3,8 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { categoryService, Category } from "../services/categoryClient";
 import { Button } from "@/components/ui/button";
-
+import * as XLSX from 'xlsx';
+import { Download } from "lucide-react";
 // Sort options
 type SortOption = {
   label: string;
@@ -105,18 +106,51 @@ const CategoriesPage: React.FC = () => {
 
   // Change page
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+    // Export to Excel functionality
+    const exportToExcel = () => {
+      // Prepare data for export
+      const exportData = categories.map((category) => ({
+        'ID': category._id,
+        'Name': category.name,
+        'Slug': category.slug,
+        'Level': category.level,
+        'Parent Category': category.parentId 
+          ? (category as any).parentId?.name || 'Unknown' 
+          : 'Root Category',
+        'Status': category.isActive ? 'Active' : 'Inactive',
+        'Created At': new Date(category.createdAt).toLocaleDateString(),
+        'Description': category.description || 'No description'
+      }));
+  
+      // Create worksheet
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      
+      // Create workbook and add worksheet
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Categories');
+      
+      // Generate and download Excel file
+      XLSX.writeFile(workbook, `categories_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Categories Management</h1>
-        <Link
-          to="categories/new"
-        >
-          <Button>
-            Add Category
+        <div className="flex items-center space-x-4">
+          {/* Export to Excel Button */}
+          <Button 
+            variant="outline" 
+            onClick={exportToExcel}
+            disabled={categories.length === 0}
+          >
+            <Download className="mr-2 h-4 w-4" /> Export to Excel
           </Button>
-        </Link>
+          
+          <Link to="categories/new">
+            <Button>Add Category</Button>
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}
